@@ -88,7 +88,7 @@ index 534b7ed..b283acb 100644
  	default:
  		return 0;
  	}
-+	return (dscp_table[dscp]);
++	return (dscp_table[dscp>>2]);
  
 -	return dscp >> 5;
  }
