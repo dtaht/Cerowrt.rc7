@@ -31,9 +31,6 @@
 #define NW718_GPIO_BUTTON_RESET		10
 
 #define NW718_GPIO_SPI_CS0		3
-#define NW718_GPIO_SPI_SCK		4
-#define NW718_GPIO_SPI_MOSI		5
-#define NW718_GPIO_SPI_MISO		6
 
 #define NW718_BUTTONS_POLL_INTERVAL	20
 
@@ -129,6 +126,7 @@ static void __init nw718_init(void)
 	rt305x_gpio_init(RT305X_GPIO_MODE_I2C |
 			 RT305X_GPIO_MODE_GPIO << RT305X_GPIO_MODE_UART0_SHIFT);
 
+	rt305x_esw_data.vlan_config = RT305X_ESW_VLAN_CONFIG_LLLLW;
 	rt305x_register_ethernet();
 	ramips_register_gpio_leds(-1, ARRAY_SIZE(nw718_leds_gpio),
 				  nw718_leds_gpio);
@@ -138,6 +136,7 @@ static void __init nw718_init(void)
 	rt305x_register_wifi();
 	rt305x_register_wdt();
 	rt305x_register_spi(nw718_spi_info, ARRAY_SIZE(nw718_spi_info));
+	rt305x_register_usb();
 }
 
 MIPS_MACHINE(RAMIPS_MACH_WHR_G300N, "NW718", "Netcore NW718", nw718_init);

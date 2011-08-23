@@ -332,24 +332,12 @@ U32 iptables extensions.
 
 endef
 
-define Package/iptables-utils
-$(call Package/iptables/Module, )
-  TITLE:=iptables save and restore utilities
-endef
-
 define Package/ip6tables
 $(call Package/iptables/Default)
   DEPENDS:=+kmod-ip6tables +libip6tc +libxtables
   CATEGORY:=IPv6
   TITLE:=IPv6 firewall administration tool
   MENU:=1
-endef
-
-define Package/ip6tables-utils
-$(call Package/iptables/Default)
-  DEPENDS:=ip6tables
-  CATEGORY:=IPv6
-  TITLE:=ip6tables save and restore utilities
 endef
 
 define Package/libiptc
@@ -438,6 +426,8 @@ endef
 define Package/iptables/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/iptables $(1)/usr/sbin/
+	$(LN) iptables $(1)/usr/sbin/iptables-save
+	$(LN) iptables $(1)/usr/sbin/iptables-restore
 	$(INSTALL_DIR) $(1)/usr/lib/iptables
 	(cd $(PKG_INSTALL_DIR)/usr/lib/iptables ; \
 		for m in $(patsubst xt_%,ipt_%,$(IPT_BUILTIN)) $(patsubst ipt_%,xt_%,$(IPT_BUILTIN)); do \
@@ -458,6 +448,8 @@ endef
 define Package/ip6tables/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/ip6tables $(1)/usr/sbin/
+	$(LN) ip6tables $(1)/usr/sbin/ip6tables-save
+	$(LN) ip6tables $(1)/usr/sbin/ip6tables-restore
 	$(INSTALL_DIR) $(1)/usr/lib/iptables
 	(cd $(PKG_INSTALL_DIR)/usr/lib/iptables ; \
 		$(CP) libip6t_*.so $(1)/usr/lib/iptables/ \
@@ -516,7 +508,6 @@ L7_INSTALL:=\
 
 
 $(eval $(call BuildPackage,iptables))
-$(eval $(call BuildPackage,iptables-utils))
 $(eval $(call BuildPlugin,iptables-mod-conntrack,$(IPT_CONNTRACK-m)))
 $(eval $(call BuildPlugin,iptables-mod-conntrack-extra,$(IPT_CONNTRACK_EXTRA-m)))
 $(eval $(call BuildPlugin,iptables-mod-extra,$(IPT_EXTRA-m)))
@@ -534,7 +525,6 @@ $(eval $(call BuildPlugin,iptables-mod-tproxy,$(IPT_TPROXY-m)))
 $(eval $(call BuildPlugin,iptables-mod-tee,$(IPT_TEE-m)))
 $(eval $(call BuildPlugin,iptables-mod-u32,$(IPT_U32-m)))
 $(eval $(call BuildPackage,ip6tables))
-$(eval $(call BuildPackage,ip6tables-utils))
 $(eval $(call BuildPackage,libiptc))
 $(eval $(call BuildPackage,libip4tc))
 $(eval $(call BuildPackage,libip6tc))

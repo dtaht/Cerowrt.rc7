@@ -795,13 +795,43 @@ static void ag71xx_restart_work_func(struct work_struct *work)
 {
 	struct ag71xx *ag = container_of(work, struct ag71xx, restart_work);
 
+	if (ag71xx_get_pdata(ag)->is_ar724x) {
+		ag->link = 0;
+		ag71xx_link_adjust(ag);
+		return;
+	}
+
 	ag71xx_stop(ag->dev);
 	ag71xx_open(ag->dev);
+}
+
+static bool ag71xx_check_dma_stuck(struct ag71xx *ag, unsigned long timestamp)
+{
+	u32 rx_sm, tx_sm, rx_fd;
+
+	if (likely(time_before(jiffies, timestamp + HZ/10)))
+		return false;
+
+	if (!netif_carrier_ok(ag->dev))
+		return false;
+
+	rx_sm = ag71xx_rr(ag, AG71XX_REG_RX_SM);
+	if ((rx_sm & 0x7) == 0x3 && ((rx_sm >> 4) & 0x7) == 0x6)
+		return true;
+
+	tx_sm = ag71xx_rr(ag, AG71XX_REG_TX_SM);
+	rx_fd = ag71xx_rr(ag, AG71XX_REG_FIFO_DEPTH);
+	if (((tx_sm >> 4) & 0x7) == 0 && ((rx_sm & 0x7) == 0) &&
+	    ((rx_sm >> 4) & 0x7) == 0 && rx_fd == 0)
+		return true;
+
+	return false;
 }
 
 static int ag71xx_tx_packets(struct ag71xx *ag)
 {
 	struct ag71xx_ring *ring = &ag->tx_ring;
+	struct ag71xx_platform_data *pdata = ag71xx_get_pdata(ag);
 	int sent;
 
 	DBG("%s: processing TX ring\n", ag->dev->name);
@@ -812,8 +842,12 @@ static int ag71xx_tx_packets(struct ag71xx *ag)
 		struct ag71xx_desc *desc = ring->buf[i].desc;
 		struct sk_buff *skb = ring->buf[i].skb;
 
-		if (!ag71xx_desc_empty(desc))
+		if (!ag71xx_desc_empty(desc)) {
+			if (pdata->is_ar7240 &&
+			    ag71xx_check_dma_stuck(ag, ring->buf[i].timestamp))
+				schedule_work(&ag->restart_work);
 			break;
+		}
 
 		ag71xx_wr(ag, AG71XX_REG_TX_STATUS, TX_STATUS_PS);
 

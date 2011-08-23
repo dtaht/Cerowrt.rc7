@@ -10,6 +10,9 @@ ramips_board_name() {
 	machine=$(awk 'BEGIN{FS="[ \t]+:[ \t]"} /machine/ {print $2}' /proc/cpuinfo)
 
 	case "$machine" in
+	*"Argus ATP-52B")
+		name="argus-atp52b"
+		;;
 	*"Aztech HW550-3G")
 		name="hw550-3g"
 		;;
@@ -30,6 +33,9 @@ ramips_board_name() {
 		;;
 	*"MoFi Network MOFI3500-3GN")
 		name="mofi3500-3gn"
+		;;
+	*"NBG-419N")
+		name="nbg-419n"
 		;;
 	*"NW718")
 		name="nw718"
@@ -54,6 +60,9 @@ ramips_board_name() {
 		;;
 	*"WZR-AGL300NH")
 		name="wzr-agl300nh"
+		;;
+	*"WR512-3GN-like router")
+		name="wr512-3gn"
 		;;
 	*)
 		name="generic"

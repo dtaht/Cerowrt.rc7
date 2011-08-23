@@ -154,6 +154,10 @@ define Image/Build/Profile/FONERA20N
 	$(call Image/Build/Template/GENERIC_8M,$(1),fonera20n,FONERA20N)
 endef
 
+define Image/Build/Profile/NBG419N
+	$(call Image/Build/Template/GENERIC_4M,$(1),nbg-419n,NBG-419N)
+endef
+
 define Image/Build/Profile/NW718
 	$(call Image/Build/Template/NW718,$(1),nw718,NW718)
 endef
@@ -199,6 +203,17 @@ define Image/Build/Profile/WCR150GN
 endef
 
 
+mtdlayout_argus_atp52b=mtdparts=physmap-flash.0:192k(bootloader)ro,64k(config),64k(factory),1152k(kernel),6656k(rootfs),7808k@0x50000(firmware)
+mtd_argus_atp52b_kernel_part_size=1179648
+mtd_argus_atp52b_rootfs_part_size=6815744
+define Image/Build/Template/ARGUS_ATP52B
+	$(call BuildFirmware/Generic,$(1),$(2),board=$(3),mtdlayout_argus_atp52b,$(mtd_argus_atp52b_kernel_part_size),$(mtd_argus_atp52b_rootfs_part_size))
+endef
+
+define Image/Build/Profile/ARGUS_ATP52B
+	$(call Image/Build/Template/ARGUS_ATP52B,$(1),argus_atp52b,ARGUS_ATP52B)
+endef
+
 mtdlayout_f5d8235=mtdparts=physmap-flash.0:320k(u-boot)ro,1536k(kernel),6208k(rootfs),64k(nvram),64k(factory),7744k@0x50000(firmware)
 mtd_f5d8235_kernel_part_size=1572864
 mtd_f5d8235_rootfs_part_size=6356992
@@ -211,12 +226,22 @@ define Image/Build/Profile/F5D8235V2
 endef
 
 
+mtdlayout_wr5123gn=mtdparts=physmap-flash.0:192k(u-boot)ro,64k(u-boot-env)ro,64k(factory)ro,832k(kernel),2944k(rootfs),3776k@0x50000(firmware)
+mtdlayout_wr5123gn8m=mtdparts=physmap-flash.0:192k(u-boot)ro,64k(u-boot-env)ro,64k(factory)ro,832k(kernel),7040k(rootfs),7872k@0x50000(firmware)
+define Image/Build/Profile/WR5123GN
+	$(call BuildFirmware/Generic,$(1),wr512-3gn-4M,board="WR512-3GN",mtdlayout_wr5123gn,851968,3014656)
+	$(call BuildFirmware/Generic,$(1),wr512-3gn-8M,board="WR512-3GN",mtdlayout_wr5123gn8m,851968,7208960)
+endef
+
+
 ifeq ($(CONFIG_RALINK_RT305X),y)
 define Image/Build/Profile/Default
+	$(call Image/Build/Profile/ARGUS_ATP52B,$(1))
 	$(call Image/Build/Profile/DIR300B1,$(1))
 	$(call Image/Build/Profile/RTG32B1,$(1))
 	$(call Image/Build/Profile/FONERA20N,$(1))
 	$(call Image/Build/Profile/V22RW2X2,$(1))
+	$(call Image/Build/Profile/NBG419N,$(1))
 	$(call Image/Build/Profile/NW718,$(1))
 	$(call Image/Build/Profile/PWH2004,$(1))
 	$(call Image/Build/Profile/WHRG300N,$(1))
@@ -224,6 +249,7 @@ define Image/Build/Profile/Default
 	$(call Image/Build/Profile/F5D8235V2,$(1))
 	$(call Image/Build/Profile/HW5503G,$(1))
 	$(call Image/Build/Profile/MOFI35003GN,$(1))
+	$(call Image/Build/Profile/WR5123GN,$(1))
 endef
 endif
 
