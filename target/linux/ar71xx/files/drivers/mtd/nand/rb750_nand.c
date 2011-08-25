@@ -302,12 +302,8 @@ static int __init rb750_nand_probe(struct platform_device *pdev)
 		goto err_set_drvdata;
 	}
 
-#ifdef CONFIG_MTD_PARTITIONS
-	ret = add_mtd_partitions(&info->mtd, rb750_nand_partitions,
-				 ARRAY_SIZE(rb750_nand_partitions));
-#else
-	ret = add_mtd_device(&info->mtd);
-#endif
+	ret = mtd_device_register(&info->mtd, rb750_nand_partitions,
+				  ARRAY_SIZE(rb750_nand_partitions));
 	if (ret)
 		goto err_release_nand;
 

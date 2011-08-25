@@ -21,7 +21,6 @@
 #include "dev-pb9x-pci.h"
 #include "dev-usb.h"
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition pb92_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -47,13 +46,10 @@ static struct mtd_partition pb92_partitions[] = {
 		.mask_flags	= MTD_WRITEABLE,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data pb92_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= pb92_partitions,
 	.nr_parts	= ARRAY_SIZE(pb92_partitions),
-#endif
 };
 
 #define PB92_KEYS_POLL_INTERVAL		20	/* msecs */

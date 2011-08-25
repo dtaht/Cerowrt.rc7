@@ -37,7 +37,6 @@
 #define ZCN_1523H_KEYS_POLL_INTERVAL	20	/* msecs */
 #define ZCN_1523H_KEYS_DEBOUNCE_INTERVAL (3 * ZCN_1523H_KEYS_POLL_INTERVAL)
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition zcn_1523h_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -78,13 +77,10 @@ static struct mtd_partition zcn_1523h_partitions[] = {
 		.size		= 0x780000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data zcn_1523h_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= zcn_1523h_partitions,
 	.nr_parts	= ARRAY_SIZE(zcn_1523h_partitions),
-#endif
 };
 
 static struct gpio_keys_button zcn_1523h_gpio_keys[] __initdata = {

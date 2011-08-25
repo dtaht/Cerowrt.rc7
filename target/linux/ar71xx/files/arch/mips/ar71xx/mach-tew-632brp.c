@@ -34,7 +34,6 @@
 #define TEW_632BRP_CONFIG_ADDR	0x1f020000
 #define TEW_632BRP_CONFIG_SIZE	0x10000
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition tew_632brp_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -64,13 +63,10 @@ static struct mtd_partition tew_632brp_partitions[] = {
 		.size		= 0x3c0000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data tew_632brp_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= tew_632brp_partitions,
 	.nr_parts	= ARRAY_SIZE(tew_632brp_partitions),
-#endif
 };
 
 static struct gpio_led tew_632brp_leds_gpio[] __initdata = {

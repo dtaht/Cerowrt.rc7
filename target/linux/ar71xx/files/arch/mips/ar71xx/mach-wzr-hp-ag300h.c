@@ -29,7 +29,6 @@
 #define WZRHPAG300H_KEYS_POLL_INTERVAL     20      /* msecs */
 #define WZRHPAG300H_KEYS_DEBOUNCE_INTERVAL (3 * WZRHPAG300H_KEYS_POLL_INTERVAL)
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition wzrhpag300h_flash_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -66,8 +65,6 @@ static struct mtd_partition wzrhpag300h_flash_partitions[] = {
 	}
 };
 
-#endif /* CONFIG_MTD_PARTITIONS */
-
 static struct mtd_info *concat_devs[2] = { NULL, NULL };
 static struct work_struct mtd_concat_work;
 
@@ -77,12 +74,8 @@ static void mtd_concat_add_work(struct work_struct *work)
 
 	mtd = mtd_concat_create(concat_devs, ARRAY_SIZE(concat_devs), "flash");
 
-#ifdef CONFIG_MTD_PARTITIONS
-	add_mtd_partitions(mtd, wzrhpag300h_flash_partitions,
+	mtd_device_register(mtd, wzrhpag300h_flash_partitions,
 			   ARRAY_SIZE(wzrhpag300h_flash_partitions));
-#else
-	add_mtd_device(mtd);
-#endif
 }
 
 static void mtd_concat_add(struct mtd_info *mtd)

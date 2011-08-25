@@ -36,7 +36,6 @@
 #define DB120_KEYS_POLL_INTERVAL	20	/* msecs */
 #define DB120_KEYS_DEBOUNCE_INTERVAL	(3 * DB120_KEYS_POLL_INTERVAL)
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition db120_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -66,13 +65,10 @@ static struct mtd_partition db120_partitions[] = {
 		.mask_flags	= MTD_WRITEABLE,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data db120_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= db120_partitions,
 	.nr_parts	= ARRAY_SIZE(db120_partitions),
-#endif
 };
 
 static struct gpio_led db120_leds_gpio[] __initdata = {

@@ -53,7 +53,6 @@
 
 #define WZRHPG300NH_MAC_OFFSET		0x20c
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition wzrhpg300nh_flash_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -89,14 +88,11 @@ static struct mtd_partition wzrhpg300nh_flash_partitions[] = {
 		.size		= 0x1f60000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct ar91xx_flash_platform_data wzrhpg300nh_flash_data = {
 	.width		= 2,
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= wzrhpg300nh_flash_partitions,
 	.nr_parts	= ARRAY_SIZE(wzrhpg300nh_flash_partitions),
-#endif
 };
 
 #define WZRHPG300NH_FLASH_BASE	0x1e000000

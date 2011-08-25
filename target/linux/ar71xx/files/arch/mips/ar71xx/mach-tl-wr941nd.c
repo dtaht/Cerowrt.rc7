@@ -32,7 +32,6 @@
 #define TL_WR941ND_KEYS_POLL_INTERVAL	20	/* msecs */
 #define TL_WR941ND_KEYS_DEBOUNCE_INTERVAL (3 * TL_WR941ND_KEYS_POLL_INTERVAL)
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition tl_wr941nd_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -58,13 +57,10 @@ static struct mtd_partition tl_wr941nd_partitions[] = {
 		.size		= 0x3d0000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data tl_wr941nd_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= tl_wr941nd_partitions,
 	.nr_parts	= ARRAY_SIZE(tl_wr941nd_partitions),
-#endif
 };
 
 static struct gpio_led tl_wr941nd_leds_gpio[] __initdata = {

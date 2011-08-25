@@ -29,10 +29,8 @@
 struct ar91xx_flash_info {
 	struct mtd_info		*mtd;
 	struct map_info		map;
-#ifdef CONFIG_MTD_PARTITIONS
 	int			nr_parts;
 	struct mtd_partition	*parts;
-#endif
 };
 
 static map_word ar91xx_flash_read(struct map_info *map, unsigned long ofs)
@@ -110,27 +108,16 @@ static int ar91xx_flash_remove(struct platform_device *pdev)
 		return 0;
 
 	pdata = pdev->dev.platform_data;
-#ifdef CONFIG_MTD_PARTITIONS
-	if (info->nr_parts) {
-		del_mtd_partitions(info->mtd);
+	mtd_device_unregister(info->mtd);
+	if (info->nr_parts)
 		kfree(info->parts);
-	} else if (pdata->nr_parts) {
-		del_mtd_partitions(info->mtd);
-	} else {
-		del_mtd_device(info->mtd);
-	}
-#else
-	del_mtd_device(info->mtd);
-#endif
 	map_destroy(info->mtd);
 
 	return 0;
 }
 
 static const char *rom_probe_types[] = { "cfi_probe", "jedec_probe", NULL };
-#ifdef CONFIG_MTD_PARTITIONS
 static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
-#endif
 
 static int ar91xx_flash_probe(struct platform_device *pdev)
 {
@@ -209,22 +196,20 @@ static int ar91xx_flash_probe(struct platform_device *pdev)
 
 	info->mtd->owner = THIS_MODULE;
 
-#ifdef CONFIG_MTD_PARTITIONS
 	if (pdata->nr_parts) {
 		dev_info(&pdev->dev, "using static partition mapping\n");
-		add_mtd_partitions(info->mtd, pdata->parts, pdata->nr_parts);
+		mtd_device_register(info->mtd, pdata->parts, pdata->nr_parts);
 		return 0;
 	}
 
 	err = parse_mtd_partitions(info->mtd, part_probe_types,
 				   &info->parts, 0);
 	if (err > 0) {
-		add_mtd_partitions(info->mtd, info->parts, err);
+		mtd_device_register(info->mtd, info->parts, err);
 		return 0;
 	}
-#endif
 
-	add_mtd_device(info->mtd);
+	mtd_device_register(info->mtd, NULL, 0);
 	return 0;
 
 err_out:

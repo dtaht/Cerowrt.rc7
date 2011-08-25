@@ -45,7 +45,6 @@
 #define AP96_CALDATA0_OFFSET		0x1000
 #define AP96_CALDATA1_OFFSET		0x5000
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition ap96_partitions[] = {
 	{
 		.name		= "uboot",
@@ -72,13 +71,10 @@ static struct mtd_partition ap96_partitions[] = {
 		.mask_flags	= MTD_WRITEABLE,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data ap96_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= ap96_partitions,
 	.nr_parts	= ARRAY_SIZE(ap96_partitions),
-#endif
 };
 
 /*

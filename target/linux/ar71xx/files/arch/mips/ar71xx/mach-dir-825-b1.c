@@ -48,7 +48,6 @@
 #define DIR825B1_MAC_LOCATION_0			0x2ffa81b8
 #define DIR825B1_MAC_LOCATION_1			0x2ffa8370
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition dir825b1_partitions[] = {
 	{
 		.name		= "uboot",
@@ -76,13 +75,10 @@ static struct mtd_partition dir825b1_partitions[] = {
 		.mask_flags	= MTD_WRITEABLE,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data dir825b1_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts          = dir825b1_partitions,
 	.nr_parts       = ARRAY_SIZE(dir825b1_partitions),
-#endif
 };
 
 static struct gpio_led dir825b1_leds_gpio[] __initdata = {

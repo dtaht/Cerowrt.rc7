@@ -34,7 +34,6 @@
 #define MZK_W300NH_KEYS_POLL_INTERVAL	20	/* msecs */
 #define MZK_W300NH_KEYS_DEBOUNCE_INTERVAL (3 * MZK_W300NH_KEYS_POLL_INTERVAL)
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition mzk_w300nh_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -64,13 +63,10 @@ static struct mtd_partition mzk_w300nh_partitions[] = {
 		.size		= 0x790000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data mzk_w300nh_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= mzk_w300nh_partitions,
 	.nr_parts	= ARRAY_SIZE(mzk_w300nh_partitions),
-#endif
 };
 
 static struct gpio_led mzk_w300nh_leds_gpio[] __initdata = {

@@ -32,7 +32,6 @@
 #define WNR2000_KEYS_POLL_INTERVAL	20	/* msecs */
 #define WNR2000_KEYS_DEBOUNCE_INTERVAL	(3 * WNR2000_KEYS_POLL_INTERVAL)
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition wnr2000_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -70,13 +69,10 @@ static struct mtd_partition wnr2000_partitions[] = {
 		.mask_flags	= MTD_WRITEABLE,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data wnr2000_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= wnr2000_partitions,
 	.nr_parts	= ARRAY_SIZE(wnr2000_partitions),
-#endif
 };
 
 static struct gpio_led wnr2000_leds_gpio[] __initdata = {

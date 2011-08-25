@@ -36,7 +36,6 @@
 #define WRT160NL_NVRAM_ADDR	0x1f7e0000
 #define WRT160NL_NVRAM_SIZE	0x10000
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition wrt160nl_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -67,13 +66,10 @@ static struct mtd_partition wrt160nl_partitions[] = {
 		.size		= 0x7a0000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data wrt160nl_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= wrt160nl_partitions,
 	.nr_parts	= ARRAY_SIZE(wrt160nl_partitions),
-#endif
 };
 
 static struct gpio_led wrt160nl_leds_gpio[] __initdata = {

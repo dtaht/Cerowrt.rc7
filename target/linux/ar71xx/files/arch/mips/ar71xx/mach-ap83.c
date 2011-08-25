@@ -41,7 +41,6 @@
 #define AP83_KEYS_POLL_INTERVAL		20	/* msecs */
 #define AP83_KEYS_DEBOUNCE_INTERVAL	(3 * AP83_KEYS_POLL_INTERVAL)
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition ap83_flash_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -72,14 +71,11 @@ static struct mtd_partition ap83_flash_partitions[] = {
 		.size		= 0x790000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct ar91xx_flash_platform_data ap83_flash_data = {
 	.width		= 2,
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= ap83_flash_partitions,
 	.nr_parts	= ARRAY_SIZE(ap83_flash_partitions),
-#endif
 };
 
 static struct resource ap83_flash_resources[] = {

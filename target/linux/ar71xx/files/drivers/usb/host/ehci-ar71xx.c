@@ -26,7 +26,7 @@ static int ehci_ar71xx_init(struct usb_hcd *hcd)
 
 	ehci->caps = hcd->regs;
 	ehci->regs = hcd->regs +
-			HC_LENGTH(ehci_readl(ehci, &ehci->caps->hc_capbase));
+			HC_LENGTH(ehci, ehci_readl(ehci, &ehci->caps->hc_capbase));
 	ehci->hcs_params = ehci_readl(ehci, &ehci->caps->hcs_params);
 
 	ehci->sbrn = 0x20;
@@ -50,7 +50,7 @@ static int ehci_ar91xx_init(struct usb_hcd *hcd)
 
 	ehci->caps = hcd->regs + 0x100;
 	ehci->regs = hcd->regs + 0x100 +
-			HC_LENGTH(ehci_readl(ehci, &ehci->caps->hc_capbase));
+			HC_LENGTH(ehci, ehci_readl(ehci, &ehci->caps->hc_capbase));
 	ehci->hcs_params = ehci_readl(ehci, &ehci->caps->hcs_params);
 
 	hcd->has_tt = 1;

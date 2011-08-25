@@ -34,7 +34,6 @@
 #define TL_MR3X20_KEYS_POLL_INTERVAL	20	/* msecs */
 #define TL_MR3X20_KEYS_DEBOUNCE_INTERVAL (3 * TL_MR3X20_KEYS_POLL_INTERVAL)
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition tl_mr3x20_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -61,10 +60,6 @@ static struct mtd_partition tl_mr3x20_partitions[] = {
 	}
 };
 #define tl_mr3x20_num_partitions	ARRAY_SIZE(tl_mr3x20_partitions)
-#else
-#define tl_mr3x20_partitions		NULL
-#define tl_mr3x20_num_partitions	0
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data tl_mr3x20_flash_data = {
 	.parts		= tl_mr3x20_partitions,

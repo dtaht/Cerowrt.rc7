@@ -36,7 +36,6 @@
 #define WRT400N_CALDATA0_OFFSET		0x1000
 #define WRT400N_CALDATA1_OFFSET		0x5000
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition wrt400n_partitions[] = {
 	{
 		.name		= "uboot",
@@ -82,13 +81,10 @@ static struct mtd_partition wrt400n_partitions[] = {
 		.size		= 0x770000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data wrt400n_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= wrt400n_partitions,
 	.nr_parts	= ARRAY_SIZE(wrt400n_partitions),
-#endif
 };
 
 static struct gpio_led wrt400n_leds_gpio[] __initdata = {

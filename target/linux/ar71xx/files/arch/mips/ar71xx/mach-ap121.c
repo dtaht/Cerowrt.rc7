@@ -38,7 +38,6 @@
 #define AP121_MINI_GPIO_BTN_JUMPSTART	12
 #define AP121_MINI_GPIO_BTN_RESET	11
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition ap121_parts[] = {
 	{
 		.name		= "u-boot",
@@ -107,13 +106,6 @@ static struct mtd_partition ap121_mini_parts[] = {
 };
 
 #define ap121_mini_nr_parts	ARRAY_SIZE(ap121_parts)
-
-#else
-#define ap121_parts		NULL
-#define ap121_nr_parts		0
-#define ap121_mini_parts	NULL
-#define ap121_mini_nr_parts	0
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data ap121_flash_data = {
 	.parts		= ap121_parts,

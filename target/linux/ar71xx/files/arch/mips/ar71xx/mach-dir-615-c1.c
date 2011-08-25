@@ -41,7 +41,6 @@
 #define DIR_615C1_CONFIG_ADDR		0x1f020000
 #define DIR_615C1_CONFIG_SIZE		0x10000
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition dir_615c1_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -71,13 +70,10 @@ static struct mtd_partition dir_615c1_partitions[] = {
 		.size		= 0x3c0000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data dir_615c1_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= dir_615c1_partitions,
 	.nr_parts	= ARRAY_SIZE(dir_615c1_partitions),
-#endif
 };
 
 static struct gpio_led dir_615c1_leds_gpio[] __initdata = {

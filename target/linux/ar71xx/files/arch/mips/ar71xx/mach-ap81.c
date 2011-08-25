@@ -33,7 +33,6 @@
 #define AP81_KEYS_POLL_INTERVAL		20 /* msecs */
 #define AP81_KEYS_DEBOUNCE_INTERVAL	(3 * AP81_KEYS_POLL_INTERVAL)
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition ap81_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -59,13 +58,10 @@ static struct mtd_partition ap81_partitions[] = {
 		.mask_flags	= MTD_WRITEABLE,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data ap81_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= ap81_partitions,
 	.nr_parts	= ARRAY_SIZE(ap81_partitions),
-#endif
 };
 
 static struct gpio_led ap81_leds_gpio[] __initdata = {

@@ -34,7 +34,6 @@
 #define DIR_600_A1_NVRAM_ADDR	0x1f030000
 #define DIR_600_A1_NVRAM_SIZE	0x10000
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition dir_600_a1_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -69,13 +68,10 @@ static struct mtd_partition dir_600_a1_partitions[] = {
 		.size		= 0x3a0000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data dir_600_a1_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= dir_600_a1_partitions,
 	.nr_parts	= ARRAY_SIZE(dir_600_a1_partitions),
-#endif
 };
 
 static struct gpio_led dir_600_a1_leds_gpio[] __initdata = {

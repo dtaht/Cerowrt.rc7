@@ -33,7 +33,6 @@
 #define TL_WA901ND_V2_KEYS_POLL_INTERVAL	20	/* msecs */
 #define TL_WA901ND_V2_KEYS_DEBOUNCE_INTERVAL	\
 					(3 * TL_WA901ND_V2_KEYS_POLL_INTERVAL)
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition tl_wa901nd_v2_partitions[] = {
 	{
 		.name		= "u-boot",
@@ -59,13 +58,10 @@ static struct mtd_partition tl_wa901nd_v2_partitions[] = {
 		.size		= 0x3d0000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data tl_wa901nd_v2_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= tl_wa901nd_v2_partitions,
 	.nr_parts	= ARRAY_SIZE(tl_wa901nd_v2_partitions),
-#endif
 };
 
 static struct gpio_led tl_wa901nd_v2_leds_gpio[] __initdata = {

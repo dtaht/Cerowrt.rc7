@@ -50,7 +50,6 @@
 #define NBG460N_GPIO_RTL8366_SDA	16
 #define NBG460N_GPIO_RTL8366_SCK	18
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition nbg460n_partitions[] = {
 	{
 		.name		= "Bootbase",
@@ -84,13 +83,10 @@ static struct mtd_partition nbg460n_partitions[] = {
 		.size		= 0x380000,
 	}
 };
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data nbg460n_flash_data = {
-#ifdef CONFIG_MTD_PARTITIONS
 	.parts		= nbg460n_partitions,
 	.nr_parts       = ARRAY_SIZE(nbg460n_partitions),
-#endif
 };
 
 static struct gpio_led nbg460n_leds_gpio[] __initdata = {

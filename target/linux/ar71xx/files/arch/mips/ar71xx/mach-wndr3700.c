@@ -49,7 +49,6 @@
 #define WNDR3700_CALDATA0_OFFSET	0x1000
 #define WNDR3700_CALDATA1_OFFSET	0x5000
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition wndr3700_partitions[] = {
 	{
 		.name		= "uboot",
@@ -147,12 +146,6 @@ static struct mtd_partition wndr3700v2_partitions[] = {
 };
 #define wndr3700_num_partitions		ARRAY_SIZE(wndr3700_partitions)
 #define wndr3700v2_num_partitions	ARRAY_SIZE(wndr3700v2_partitions)
-#else
-#define wndr3700_partitions		NULL
-#define wndr3700_num_partitions		0
-#define wndr3700v2_partitions		NULL
-#define wndr3700v2_num_partitions	0
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data wndr3700_flash_data;
 

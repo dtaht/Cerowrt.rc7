@@ -109,7 +109,6 @@ static struct ar71xx_pci_irq rb4xx_pci_irqs[] __initdata = {
 	}
 };
 
-#ifdef CONFIG_MTD_PARTITIONS
 static struct mtd_partition rb4xx_partitions[] = {
 	{
 		.name		= "routerboot",
@@ -133,10 +132,6 @@ static struct mtd_partition rb4xx_partitions[] = {
 	}
 };
 #define rb4xx_num_partitions	ARRAY_SIZE(rb4xx_partitions)
-#else /* CONFIG_MTD_PARTITIONS */
-#define rb4xx_partitions	NULL
-#define rb4xx_num_partitions	0
-#endif /* CONFIG_MTD_PARTITIONS */
 
 static struct flash_platform_data rb4xx_flash_data = {
 	.type		= "pm25lv512",
