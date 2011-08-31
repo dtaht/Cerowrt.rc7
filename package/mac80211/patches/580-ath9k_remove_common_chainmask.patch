@@ -69,7 +69,7 @@
  	ath9k_ps_restore(sc);
 --- a/drivers/net/wireless/ath/ath9k/hw.c
 +++ b/drivers/net/wireless/ath/ath9k/hw.c
-@@ -1485,9 +1485,6 @@ int ath9k_hw_reset(struct ath_hw *ah, st
+@@ -1488,9 +1488,6 @@ int ath9k_hw_reset(struct ath_hw *ah, st
  	u64 tsf = 0;
  	int i, r;
  
@@ -79,7 +79,7 @@
  	if (!ath9k_hw_setpower(ah, ATH9K_PM_AWAKE))
  		return -EIO;
  
-@@ -2105,6 +2102,8 @@ int ath9k_hw_fill_cap_info(struct ath_hw
+@@ -2108,6 +2105,8 @@ int ath9k_hw_fill_cap_info(struct ath_hw
  
  	pCap->tx_chainmask = fixup_chainmask(chip_chainmask, pCap->tx_chainmask);
  	pCap->rx_chainmask = fixup_chainmask(chip_chainmask, pCap->rx_chainmask);
@@ -90,7 +90,7 @@
  
 --- a/drivers/net/wireless/ath/ath9k/xmit.c
 +++ b/drivers/net/wireless/ath/ath9k/xmit.c
-@@ -1657,7 +1657,7 @@ u8 ath_txchainmask_reduction(struct ath_
+@@ -1660,7 +1660,7 @@ u8 ath_txchainmask_reduction(struct ath_
  
  static void ath_buf_set_rate(struct ath_softc *sc, struct ath_buf *bf, int len)
  {
@@ -99,7 +99,7 @@
  	struct ath9k_11n_rate_series series[4];
  	struct sk_buff *skb;
  	struct ieee80211_tx_info *tx_info;
-@@ -1717,7 +1717,7 @@ static void ath_buf_set_rate(struct ath_
+@@ -1720,7 +1720,7 @@ static void ath_buf_set_rate(struct ath_
  			/* MCS rates */
  			series[i].Rate = rix | 0x80;
  			series[i].ChSel = ath_txchainmask_reduction(sc,
@@ -108,7 +108,7 @@
  			series[i].PktDuration = ath_pkt_duration(sc, rix, len,
  				 is_40, is_sgi, is_sp);
  			if (rix < 8 && (tx_info->flags & IEEE80211_TX_CTL_STBC))
-@@ -1742,10 +1742,10 @@ static void ath_buf_set_rate(struct ath_
+@@ -1745,10 +1745,10 @@ static void ath_buf_set_rate(struct ath_
  		}
  
  		if (bf->bf_state.bfs_paprd)
