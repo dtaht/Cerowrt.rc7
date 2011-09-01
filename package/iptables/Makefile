@@ -9,10 +9,10 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=iptables
-PKG_VERSION:=1.4.12
+PKG_VERSION:=1.4.12.1
 PKG_RELEASE:=4
 
-PKG_MD5SUM:=d3f145c2c91daecbb4251bc79390b46c
+PKG_MD5SUM:=b08a1195ec2c1ebeaf072db3c55fdf43
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=http://www.netfilter.org/projects/iptables/files \
 	ftp://ftp.be.netfilter.org/pub/netfilter/iptables/ \
