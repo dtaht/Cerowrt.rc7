@@ -27,6 +27,17 @@ endef
 
 $(eval $(call Profile,TLMR3420V1))
 
+define Profile/TLWR703NV1
+	NAME:=TP-LINK TL-WR703N v1
+	PACKAGES:=kmod-usb-core kmod-usb2
+endef
+
+define Profile/TLWR703NV1/Description
+	Package set optimized for the TP-LINK TL-WR703N v1.
+endef
+
+$(eval $(call Profile,TLWR703NV1))
+
 define Profile/TLWA901NDV1
 	NAME:=TP-LINK TL-WA901ND v1
 	PACKAGES:=
@@ -70,6 +81,30 @@ define Profile/TLWR740NV1/Description
 endef
 
 $(eval $(call Profile,TLWR740NV1))
+
+
+define Profile/TLWR740NV3
+	NAME:=TP-LINK TL-WR740N v3
+	PACKAGES:=
+endef
+
+define Profile/TLWR740NV3/Description
+	Package set optimized for the TP-LINK TL-WR740N v3.
+endef
+
+$(eval $(call Profile,TLWR740NV3))
+
+
+define Profile/TLWR743NDV1
+	NAME:=TP-LINK TL-WR743ND v1
+	PACKAGES:=
+endef
+
+define Profile/TLWR743NDV1/Description
+	Package set optimized for the TP-LINK TL-WR743ND v1.
+endef
+
+$(eval $(call Profile,TLWR743NDV1))
 
 define Profile/TLWR841NV15
 	NAME:=TP-LINK TL-WR841N v1.5
