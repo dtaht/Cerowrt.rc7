@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=base-files
-PKG_RELEASE:=81
+PKG_RELEASE:=82
 
 PKG_FILE_DEPENDS:=$(PLATFORM_DIR)/ $(GENERIC_PLATFORM_DIR)/base-files/
 PKG_BUILD_DEPENDS:=opkg/host
@@ -34,6 +34,7 @@ endif
 define Package/base-files
   SECTION:=base
   CATEGORY:=Base system
+  DEPENDS:=+!USE_NETIFD:base-files-network +USE_NETIFD:netifd
   TITLE:=Base filesystem for OpenWrt
   URL:=http://openwrt.org/
   VERSION:=$(PKG_RELEASE)-$(REVISION)
@@ -65,6 +66,11 @@ define Package/base-files/description
  This package contains a base filesystem and system scripts for OpenWrt.
 endef
 
+define Package/base-files/config
+  config USE_NETIFD
+    bool "Use netifd instead of the old network init scripts (experimental!)"
+	default n
+endef
 
 define Package/gcc/Default
   SECTION:=libs

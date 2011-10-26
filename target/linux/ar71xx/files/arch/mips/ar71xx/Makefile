@@ -28,6 +28,7 @@ obj-$(CONFIG_AR71XX_DEV_USB)		+= dev-usb.o
 obj-$(CONFIG_AR71XX_NVRAM)		+= nvram.o
 obj-$(CONFIG_AR71XX_PCI_ATH9K_FIXUP)	+= pci-ath9k-fixup.o
 
+obj-$(CONFIG_AR71XX_MACH_ALL0258N)	+= mach-all0258n.o
 obj-$(CONFIG_AR71XX_MACH_AP121)		+= mach-ap121.o
 obj-$(CONFIG_AR71XX_MACH_AP81)		+= mach-ap81.o
 obj-$(CONFIG_AR71XX_MACH_AP83)		+= mach-ap83.o
@@ -58,6 +59,7 @@ obj-$(CONFIG_AR71XX_MACH_TL_WR941ND)	+= mach-tl-wr941nd.o
 obj-$(CONFIG_AR71XX_MACH_TL_WR1043ND)	+= mach-tl-wr1043nd.o
 obj-$(CONFIG_AR71XX_MACH_TL_WR703N)	+= mach-tl-wr703n.o
 obj-$(CONFIG_AR71XX_MACH_UBNT)		+= mach-ubnt.o
+obj-$(CONFIG_AR71XX_MACH_WHR_HP_G300N)	+= mach-whr-hp-g300n.o
 obj-$(CONFIG_AR71XX_MACH_WNDR3700)	+= mach-wndr3700.o
 obj-$(CONFIG_AR71XX_MACH_WNR2000)	+= mach-wnr2000.o
 obj-$(CONFIG_AR71XX_MACH_WP543)		+= mach-wp543.o
