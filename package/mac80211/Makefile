@@ -159,7 +159,7 @@ endef
 
 define KernelPackage/p54-common
   $(call KernelPackage/p54/Default)
-  DEPENDS+= @PCI_SUPPORT||@USB_SUPPORT||@TARGET_omap24xx +kmod-mac80211 +kmod-crc-ccitt
+  DEPENDS+= @PCI_SUPPORT||@USB_SUPPORT||@TARGET_omap24xx +kmod-mac80211 +kmod-lib-crc-ccitt
   TITLE+= (COMMON)
   FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/p54/p54common.ko
   AUTOLOAD:=$(call AutoLoad,30,p54common)
@@ -202,7 +202,7 @@ endef
 
 define KernelPackage/rt2x00-lib
 $(call KernelPackage/rt2x00/Default)
-  DEPENDS+= @(PCI_SUPPORT||USB_SUPPORT||TARGET_ramips) +kmod-mac80211 +kmod-crc-itu-t
+  DEPENDS+= @(PCI_SUPPORT||USB_SUPPORT||TARGET_ramips) +kmod-mac80211 +kmod-lib-crc-itu-t
   TITLE+= (LIB)
   FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/rt2x00/rt2x00lib.ko
   AUTOLOAD:=$(call AutoLoad,25,rt2x00lib)
@@ -303,7 +303,7 @@ endef
 
 define KernelPackage/rt2800-pci
 $(call KernelPackage/rt2x00/Default)
-  DEPENDS+= @(PCI_SUPPORT||TARGET_ramips) +kmod-rt2x00-pci +kmod-rt2800-lib +kmod-crc-ccitt +TARGET_ramips:kmod-rt2x00-soc
+  DEPENDS+= @(PCI_SUPPORT||TARGET_ramips) +kmod-rt2x00-pci +kmod-rt2800-lib +kmod-lib-crc-ccitt +TARGET_ramips:kmod-rt2x00-soc
   TITLE+= (RT2860 PCI)
   FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/rt2x00/rt2800pci.ko
   AUTOLOAD:=$(call AutoLoad,28,rt2800pci)
@@ -311,7 +311,7 @@ endef
 
 define KernelPackage/rt2800-usb
 $(call KernelPackage/rt2x00/Default)
-  DEPENDS+= @USB_SUPPORT +kmod-rt2x00-usb +kmod-rt2800-lib +kmod-crc-ccitt
+  DEPENDS+= @USB_SUPPORT +kmod-rt2x00-usb +kmod-rt2800-lib +kmod-lib-crc-ccitt
   TITLE+= (RT2870 USB)
   FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/rt2x00/rt2800usb.ko
   AUTOLOAD:=$(call AutoLoad,28,rt2800usb)
@@ -628,7 +628,7 @@ define KernelPackage/iwlagn
   $(call KernelPackage/mac80211/Default)
   DEPENDS:= +kmod-mac80211 @PCI_SUPPORT
   TITLE:=Intel AGN Wireless support
-  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/iwlwifi/iwlwifi.$(LINUX_KMOD_SUFFIX)
+  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/iwlwifi/iwlwifi.ko
   AUTOLOAD:=$(call AutoLoad,60,iwlagn)
   MENU:=1
 endef
@@ -704,7 +704,7 @@ define KernelPackage/iwl-legacy
   $(call KernelPackage/mac80211/Default)
   DEPENDS:= +kmod-mac80211 @PCI_SUPPORT
   TITLE:=Intel legacy Wireless support
-  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/iwlegacy/iwl-legacy.$(LINUX_KMOD_SUFFIX)
+  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/iwlegacy/iwl-legacy.ko
   AUTOLOAD:=$(call AutoLoad,60,iwl-legacy)
 endef
 
@@ -716,7 +716,7 @@ define KernelPackage/iwl3945
   $(call KernelPackage/mac80211/Default)
   DEPENDS:= +kmod-mac80211 +kmod-iwl-legacy
   TITLE:=Intel iwl3945 Wireless support
-  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/iwlegacy/iwl3945.$(LINUX_KMOD_SUFFIX)
+  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/iwlegacy/iwl3945.ko
   AUTOLOAD:=$(call AutoLoad,61,iwl3945)
 endef
 
@@ -728,7 +728,7 @@ define KernelPackage/iwl4965
   $(call KernelPackage/mac80211/Default)
   DEPENDS:= +kmod-mac80211 +kmod-iwl-legacy
   TITLE:=Intel iwl4965 Wireless support
-  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/iwlegacy/iwl4965.$(LINUX_KMOD_SUFFIX)
+  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/iwlegacy/iwl4965.ko
   AUTOLOAD:=$(call AutoLoad,61,iwl4965)
 endef
 

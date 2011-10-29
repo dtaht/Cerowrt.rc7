@@ -24,8 +24,8 @@ define KernelPackage/bluetooth
 	CONFIG_BLUEZ_HCIUSB \
 	CONFIG_BLUEZ_HIDP \
 	CONFIG_BT \
-	CONFIG_BT_L2CAP \
-	CONFIG_BT_SCO \
+	CONFIG_BT_L2CAP=y \
+	CONFIG_BT_SCO=y \
 	CONFIG_BT_RFCOMM \
 	CONFIG_BT_BNEP \
 	CONFIG_BT_HCIBTUSB \
@@ -260,7 +260,6 @@ define KernelPackage/hid
   KCONFIG:=CONFIG_HID
   FILES:=$(LINUX_DIR)/drivers/hid/hid.ko
   AUTOLOAD:=$(call AutoLoad,61,hid)
-  $(call SetDepends/hid)
   $(call AddDepends/input,+kmod-input-evdev)
 endef
 
@@ -275,7 +274,6 @@ define KernelPackage/input-core
   SUBMENU:=$(OTHER_MENU)
   TITLE:=Input device core
   KCONFIG:=CONFIG_INPUT
-  $(call SetDepends/input)
   FILES:=$(LINUX_DIR)/drivers/input/input-core.ko
   AUTOLOAD:=$(call AutoLoad,19,input-core)
 endef
