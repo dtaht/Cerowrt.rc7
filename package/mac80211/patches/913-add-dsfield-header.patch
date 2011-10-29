@@ -1,0 +1,24 @@
+From 8997013bb529c7ed5bfecd85f736e640630f421a Mon Sep 17 00:00:00 2001
+From: Dave Taht <d+bufferbloat@taht.net>
+Date: Sat, 29 Oct 2011 19:52:12 +0200
+Subject: [PATCH] add dsfield header
+
+---
+ net/wireless/util.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/net/wireless/util.c b/net/wireless/util.c
+index 46b27d1..231a603 100644
+--- a/net/wireless/util.c
++++ b/net/wireless/util.c
+@@ -9,6 +9,7 @@
+ #include <linux/crc32.h>
+ #include <net/cfg80211.h>
+ #include <net/ip.h>
++#include <net/dsfield.h>
+ #include "core.h"
+ 
+ /* DSCP to VI, VO, BE, BK Queue mappings */
+-- 
+1.7.5.4
+
