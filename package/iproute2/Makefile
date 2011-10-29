@@ -8,12 +8,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=iproute2
-PKG_VERSION:=2.6.39
-PKG_RELEASE:=4
+PKG_VERSION:=3.0.0
+PKG_RELEASE:=5
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=http://devresources.linux-foundation.org/dev/iproute2/download/
-PKG_MD5SUM:=8a3b6bc77c2ecf752284aa4a6fc630a6
+#PKG_SOURCE_URL:=http://devresources.linux-foundation.org/dev/iproute2/download/
+PKG_SOURCE_URL:=git://git.kernel.org/pub/scm/linux/kernel/git/shemminger/iproute2.git
+PKG_SOURCE_PROTO=git
+PKG_REV=ce691fb5ce78b2c75243c60a757a3990ae09681c
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_VERSION:=$(PKG_REV)
+
+#PKG_MD5SUM:=8a3b6bc77c2ecf752284aa4a6fc630a6
 PKG_BUILD_PARALLEL:=1
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/iproute2-$(PKG_VERSION)
