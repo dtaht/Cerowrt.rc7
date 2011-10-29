@@ -1,19 +1,30 @@
+From 314985b8a76820e2a5442f638e47cc30107f1820 Mon Sep 17 00:00:00 2001
+From: Dave Taht <d+bufferbloat@taht.net>
+Date: Sat, 29 Oct 2011 13:53:40 +0200
+Subject: [PATCH 2/2] First attempt at some diffserv classification
+
+---
+ net/wireless/util.c |   74 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 73 insertions(+), 1 deletions(-)
+
 diff --git a/net/wireless/util.c b/net/wireless/util.c
-index 534b7ed..b283acb 100644
+index 8737f2f..46b27d1 100644
 --- a/net/wireless/util.c
 +++ b/net/wireless/util.c
-@@ -641,10 +641,80 @@ void ieee80211_amsdu_to_8023s(struct sk_buff *skb, struct sk_buff_head *list,
- }
- EXPORT_SYMBOL(ieee80211_amsdu_to_8023s);
+@@ -11,6 +11,78 @@
+ #include <net/ip.h>
+ #include "core.h"
  
-+/* VI, VO, BE, BK */
++/* DSCP to VI, VO, BE, BK Queue mappings */
++/* IMM = 4 */
++/* Multiple classifications here are still wrong */
 +
 +static const u8 dscp_table[] = {
 +	0, /* BE = BE */
 +	0, /* BE */
 +	0, /* BE */
 +	0, /* BE */
-+	0, /* BE */
++	5, /* IMM bit = VI  */
 +	0, /* BE */
 +	0, /* BE */
 +	0, /* BE */
@@ -37,13 +48,13 @@ index 534b7ed..b283acb 100644
 +	0, /* BE */
 +	4, /* AF32 */
 +	0, /* BE */
-+	4, /* AF33 */
++	4, /* AF33 = VI */
 +	0, /* BE */
-+	4, /* CS4 */
++	4, /* CS4 = VI  */
 +	0, /* BE */
 +	0, /* BE */
 +	0, /* BE */
-+	4, /* BE */
++	4, /* CS4 + IMM = VI */
 +	0, /* BE */
 +	0, /* BE */
 +	0, /* BE */
@@ -61,36 +72,33 @@ index 534b7ed..b283acb 100644
 +	0, /* BE */
 +	0, /* BE */
 +	0, /* BE */
++	5, /* CS6 + IMM = VI */
 +	0, /* BE */
 +	0, /* BE */
 +	0, /* BE */
-+	0, /* BE */
-+	5, /* CS7 = IC */
-+	0, /* BE */
++	5, /* CS7 = VI */
 +	0, /* BE */
 +	0, /* BE */
 +	0, /* BE */
++	5, /* CS7 + IMM = VI */
 +	0, /* BE */
 +	0, /* BE */
 +	0  /* BE */
 +	};
 +
-+  
- /* Given a data frame determine the 802.1p/1d tag to use. */
- unsigned int cfg80211_classify8021d(struct sk_buff *skb)
- {
--	unsigned int dscp;
-+ 	unsigned int dscp;	  
- 
- 	/* skb->priority values from 256->263 are magic values to
- 	 * directly indicate a specific 802.1d priority.  This is used
-@@ -661,8 +731,8 @@ unsigned int cfg80211_classify8021d(struct sk_buff *skb)
- 	default:
++
+ struct ieee80211_rate *
+ ieee80211_get_response_rate(struct ieee80211_supported_band *sband,
+ 			    u32 basic_rates, int bitrate)
+@@ -670,7 +742,7 @@ unsigned int cfg80211_classify8021d(struct sk_buff *skb)
  		return 0;
  	}
-+	return (dscp_table[dscp>>2]);
  
 -	return dscp >> 5;
++	return (dscp_table[dscp >> 2]);
  }
  EXPORT_SYMBOL(cfg80211_classify8021d);
  
+-- 
+1.7.5.4
+

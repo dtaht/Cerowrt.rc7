@@ -1,0 +1,31 @@
+From 8370efa7e542812e08da373836c138fabe3f1174 Mon Sep 17 00:00:00 2001
+From: Dave Taht <d+bufferbloat@taht.net>
+Date: Sat, 29 Oct 2011 10:54:30 +0200
+Subject: [PATCH 1/2] Add correct IPV6 dsfield handling to 802.11e wireless
+ queues
+
+This makes ipv6 behavior equivalent to ipv4 behavior with regards
+to mapping diffserv prio bits to wireless VO,VI,BE, and BK classes.
+---
+ net/wireless/util.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/net/wireless/util.c b/net/wireless/util.c
+index 2f178f7..8737f2f 100644
+--- a/net/wireless/util.c
++++ b/net/wireless/util.c
+@@ -661,7 +661,10 @@ unsigned int cfg80211_classify8021d(struct sk_buff *skb)
+ 
+ 	switch (skb->protocol) {
+ 	case htons(ETH_P_IP):
+-		dscp = ip_hdr(skb)->tos & 0xfc;
++		dscp = ipv4_get_dsfield(ip_hdr(skb)) & 0xfc;
++		break;
++	case htons(ETH_P_IPV6):
++		dscp = ipv6_get_dsfield(ipv6_hdr(skb)) & 0xfc;
+ 		break;
+ 	default:
+ 		return 0;
+-- 
+1.7.5.4
+
