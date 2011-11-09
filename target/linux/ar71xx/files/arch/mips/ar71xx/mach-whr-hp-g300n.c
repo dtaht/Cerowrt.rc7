@@ -49,6 +49,7 @@ static struct mtd_partition whrhpg300n_partitions[] = {
 		.name		= "u-boot-env",
 		.offset		= 0x03e000,
 		.size		= 0x002000,
+		.mask_flags	= MTD_WRITEABLE,
 	}, {
 		.name		= "kernel",
 		.offset		= 0x040000,
@@ -58,7 +59,7 @@ static struct mtd_partition whrhpg300n_partitions[] = {
 		.offset		= 0x120000,
 		.size		= 0x2c0000,
 	}, {
-		.name		= "NVRAM",
+		.name		= "user_property",
 		.offset		= 0x3e0000,
 		.size		= 0x010000,
 	}, {
@@ -168,4 +169,10 @@ static void __init whrhpg300n_setup(void)
 }
 
 MIPS_MACHINE(AR71XX_MACH_WHR_HP_G300N, "WHR-HP-G300N", "Buffalo WHR-HP-G300N",
+	     whrhpg300n_setup);
+
+MIPS_MACHINE(AR71XX_MACH_WHR_G301N, "WHR-G301N", "Buffalo WHR-G301N",
+	     whrhpg300n_setup);
+
+MIPS_MACHINE(AR71XX_MACH_WHR_HP_GN, "WHR-HP-GN", "Buffalo WHR-HP-GN",
 	     whrhpg300n_setup);

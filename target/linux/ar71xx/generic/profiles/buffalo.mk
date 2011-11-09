@@ -27,6 +27,18 @@ endef
 
 $(eval $(call Profile,WZRHPAG300H))
 
+define Profile/WHRG301N
+	NAME:=Buffalo WHR-G301N
+	PACKAGES:=
+endef
+
+define Profile/WHRG301N/Description
+	Package set optimized for the Buffalo WHR-G301N.
+endef
+
+$(eval $(call Profile,WHRG301N))
+
+
 define Profile/WHRHPG300N
 	NAME:=Buffalo WHR-HP-G300N
 	PACKAGES:=
@@ -37,3 +49,15 @@ define Profile/WHRHPG300N/Description
 endef
 
 $(eval $(call Profile,WHRHPG300N))
+
+
+define Profile/WHRHPGN
+	NAME:=Buffalo WHR-HP-GN
+	PACKAGES:=
+endef
+
+define Profile/WHRHPGN/Description
+	Package set optimized for the Buffalo WHR-HP-GN.
+endef
+
+$(eval $(call Profile,WHRHPGN))

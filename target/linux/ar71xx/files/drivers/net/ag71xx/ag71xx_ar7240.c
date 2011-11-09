@@ -397,21 +397,6 @@ int ar7240sw_phy_write(struct mii_bus *mii, unsigned phy_addr,
 	return ret;
 }
 
-static int ar7240sw_capture_stats(struct ar7240sw *as)
-{
-	struct mii_bus *mii = as->mii_bus;
-	int ret;
-
-	/* Capture the hardware statistics for all ports */
-	ar7240sw_reg_write(mii, AR7240_REG_MIB_FUNCTION0,
-			   (AR7240_MIB_FUNC_CAPTURE << AR7240_MIB_FUNC_S));
-
-	/* Wait for the capturing to complete. */
-	ret = ar7240sw_reg_wait(mii, AR7240_REG_MIB_FUNCTION0,
-				AR7240_MIB_BUSY, 0, 10);
-	return ret;
-}
-
 static void ar7240sw_disable_port(struct ar7240sw *as, unsigned port)
 {
 	ar7240sw_reg_write(as->mii_bus, AR7240_REG_PORT_CTRL(port),
@@ -477,7 +462,6 @@ static void ar7240sw_setup_port(struct ar7240sw *as, unsigned port, u8 portmask)
 {
 	struct mii_bus *mii = as->mii_bus;
 	u32 ctrl;
-	u32 dest_ports;
 	u32 vlan;
 
 	ctrl = AR7240_PORT_CTRL_STATE_FORWARD | AR7240_PORT_CTRL_LEARN |
@@ -525,7 +509,7 @@ static void ar7240sw_setup_port(struct ar7240sw *as, unsigned port, u8 portmask)
 	/* allow the port to talk to all other ports, but exclude its
 	 * own ID to prevent frames from being reflected back to the
 	 * port that they came from */
-	dest_ports = AR7240_PORT_MASK_BUT(port);
+	portmask &= AR7240_PORT_MASK_BUT(port);
 
 	/* set default VID and and destination ports for this VLAN */
 	vlan |= (portmask << AR7240_PORT_VLAN_DEST_PORTS_S);

@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=uhttpd
-PKG_RELEASE:=28
+PKG_RELEASE:=29
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 PKG_CONFIG_DEPENDS := \
@@ -92,7 +92,7 @@ endef
 
 
 TARGET_CFLAGS += $(TLS_CFLAGS)
-TARGET_LDFLAGS += $(TLS_LDFLAGS)
+TARGET_LDFLAGS += $(TLS_LDFLAGS) -Wl,-rpath-link=$(STAGING_DIR)/usr/lib
 MAKE_VARS += \
 	FPIC="$(FPIC)" \
 	LUA_SUPPORT="$(if $(CONFIG_PACKAGE_uhttpd-mod-lua),1)" \
