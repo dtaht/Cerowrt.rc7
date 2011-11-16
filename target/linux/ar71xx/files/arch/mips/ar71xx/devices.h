@@ -40,8 +40,9 @@ extern struct platform_device ar71xx_eth0_device;
 extern struct platform_device ar71xx_eth1_device;
 void ar71xx_add_device_eth(unsigned int id) __init;
 
-extern struct platform_device ar71xx_mdio_device;
-void ar71xx_add_device_mdio(u32 phy_mask) __init;
+extern struct platform_device ar71xx_mdio0_device;
+extern struct platform_device ar71xx_mdio1_device;
+void ar71xx_add_device_mdio(unsigned int id, u32 phy_mask) __init;
 
 void ar71xx_add_device_uart(void) __init;
 

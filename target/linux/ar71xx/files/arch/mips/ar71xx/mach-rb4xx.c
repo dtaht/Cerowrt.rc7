@@ -213,7 +213,7 @@ static void __init rb411_setup(void)
 	spi_register_board_info(rb4xx_microsd_info,
 				ARRAY_SIZE(rb4xx_microsd_info));
 
-	ar71xx_add_device_mdio(0xfffffffc);
+	ar71xx_add_device_mdio(0, 0xfffffffc);
 
 	ar71xx_init_mac(ar71xx_eth0_data.mac_addr, ar71xx_mac_base, 0);
 	ar71xx_eth0_data.phy_if_mode = PHY_INTERFACE_MODE_MII;
@@ -246,7 +246,7 @@ static void __init rb433_setup(void)
 	spi_register_board_info(rb4xx_microsd_info,
 				ARRAY_SIZE(rb4xx_microsd_info));
 
-	ar71xx_add_device_mdio(~RB433_MDIO_PHYMASK);
+	ar71xx_add_device_mdio(0, ~RB433_MDIO_PHYMASK);
 
 	ar71xx_init_mac(ar71xx_eth0_data.mac_addr, ar71xx_mac_base, 1);
 	ar71xx_eth0_data.phy_if_mode = PHY_INTERFACE_MODE_MII;
@@ -281,7 +281,7 @@ MIPS_MACHINE(AR71XX_MACH_RB_433U, "433U", "MikroTik RouterBOARD 433UAH",
 static void __init rb450_generic_setup(int gige)
 {
 	rb4xx_generic_setup();
-	ar71xx_add_device_mdio(~RB450_MDIO_PHYMASK);
+	ar71xx_add_device_mdio(0, ~RB450_MDIO_PHYMASK);
 
 	ar71xx_init_mac(ar71xx_eth0_data.mac_addr, ar71xx_mac_base, 1);
 	ar71xx_eth0_data.phy_if_mode = (gige) ?
@@ -319,7 +319,7 @@ static void __init rb493_setup(void)
 {
 	rb4xx_generic_setup();
 
-	ar71xx_add_device_mdio(0x3fffff00);
+	ar71xx_add_device_mdio(0, 0x3fffff00);
 
 	ar71xx_init_mac(ar71xx_eth0_data.mac_addr, ar71xx_mac_base, 0);
 	ar71xx_eth0_data.phy_if_mode = PHY_INTERFACE_MODE_MII;
@@ -371,7 +371,7 @@ static void __init rb493g_setup(void)
 	platform_device_register(&rb4xx_spi_device);
 	platform_device_register(&rb4xx_nand_device);
 
-	ar71xx_add_device_mdio(~RB493G_MDIO_PHYMASK);
+	ar71xx_add_device_mdio(0, ~RB493G_MDIO_PHYMASK);
 
 	ar71xx_init_mac(ar71xx_eth0_data.mac_addr, ar71xx_mac_base, 0);
 	ar71xx_eth0_data.phy_if_mode = PHY_INTERFACE_MODE_RGMII;

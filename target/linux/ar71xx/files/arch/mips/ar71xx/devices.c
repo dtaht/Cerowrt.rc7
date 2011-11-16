@@ -119,7 +119,7 @@ void __init ar71xx_add_device_uart(void)
 	platform_device_register(pdev);
 }
 
-static struct resource ar71xx_mdio_resources[] = {
+static struct resource ar71xx_mdio0_resources[] = {
 	{
 		.name	= "mdio_base",
 		.flags	= IORESOURCE_MEM,
@@ -128,15 +128,36 @@ static struct resource ar71xx_mdio_resources[] = {
 	}
 };
 
-static struct ag71xx_mdio_platform_data ar71xx_mdio_data;
+static struct ag71xx_mdio_platform_data ar71xx_mdio0_data;
 
-struct platform_device ar71xx_mdio_device = {
+struct platform_device ar71xx_mdio0_device = {
 	.name		= "ag71xx-mdio",
-	.id		= -1,
-	.resource	= ar71xx_mdio_resources,
-	.num_resources	= ARRAY_SIZE(ar71xx_mdio_resources),
+	.id		= 0,
+	.resource	= ar71xx_mdio0_resources,
+	.num_resources	= ARRAY_SIZE(ar71xx_mdio0_resources),
 	.dev = {
-		.platform_data = &ar71xx_mdio_data,
+		.platform_data = &ar71xx_mdio0_data,
+	},
+};
+
+static struct resource ar71xx_mdio1_resources[] = {
+	{
+		.name	= "mdio_base",
+		.flags	= IORESOURCE_MEM,
+		.start	= AR71XX_GE1_BASE,
+		.end	= AR71XX_GE1_BASE + 0x200 - 1,
+	}
+};
+
+static struct ag71xx_mdio_platform_data ar71xx_mdio1_data;
+
+struct platform_device ar71xx_mdio1_device = {
+	.name		= "ag71xx-mdio",
+	.id		= 1,
+	.resource	= ar71xx_mdio1_resources,
+	.num_resources	= ARRAY_SIZE(ar71xx_mdio1_resources),
+	.dev = {
+		.platform_data = &ar71xx_mdio1_data,
 	},
 };
 
@@ -169,35 +190,123 @@ static void ar71xx_set_pll(u32 cfg_reg, u32 pll_reg, u32 pll_val, u32 shift)
 	iounmap(base);
 }
 
-void __init ar71xx_add_device_mdio(u32 phy_mask)
+static void __init ar71xx_mii_ctrl_set_if(unsigned int reg,
+					  unsigned int mii_if)
 {
+	void __iomem *base;
+	u32 t;
+
+	base = ioremap(AR71XX_MII_BASE, AR71XX_MII_SIZE);
+
+	t = __raw_readl(base + reg);
+	t &= ~(MII_CTRL_IF_MASK);
+	t |= (mii_if & MII_CTRL_IF_MASK);
+	__raw_writel(t, base + reg);
+
+	iounmap(base);
+}
+
+static void ar71xx_mii_ctrl_set_speed(unsigned int reg, unsigned int speed)
+{
+	void __iomem *base;
+	unsigned int mii_speed;
+	u32 t;
+
+	switch (speed) {
+	case SPEED_10:
+		mii_speed =  MII_CTRL_SPEED_10;
+		break;
+	case SPEED_100:
+		mii_speed =  MII_CTRL_SPEED_100;
+		break;
+	case SPEED_1000:
+		mii_speed =  MII_CTRL_SPEED_1000;
+		break;
+	default:
+		BUG();
+	}
+
+	base = ioremap(AR71XX_MII_BASE, AR71XX_MII_SIZE);
+
+	t = __raw_readl(base + reg);
+	t &= ~(MII_CTRL_SPEED_MASK << MII_CTRL_SPEED_SHIFT);
+	t |= mii_speed  << MII_CTRL_SPEED_SHIFT;
+	__raw_writel(t, base + reg);
+
+	iounmap(base);
+}
+
+void __init ar71xx_add_device_mdio(unsigned int id, u32 phy_mask)
+{
+	struct platform_device *mdio_dev;
+	struct ag71xx_mdio_platform_data *mdio_data;
+	unsigned int max_id;
+
+	if (ar71xx_soc == AR71XX_SOC_AR9341 ||
+	    ar71xx_soc == AR71XX_SOC_AR9342 ||
+	    ar71xx_soc == AR71XX_SOC_AR9344)
+		max_id = 1;
+	else
+		max_id = 0;
+
+	if (id > max_id) {
+		printk(KERN_ERR "ar71xx: invalid MDIO id %u\n", id);
+		return;
+	}
+
 	switch (ar71xx_soc) {
-	case AR71XX_SOC_AR7240:
-		ar71xx_mdio_data.is_ar7240 = 1;
-		break;
 	case AR71XX_SOC_AR7241:
-		ar71xx_mdio_data.is_ar7240 = 1;
-		ar71xx_mdio_resources[0].start = AR71XX_GE1_BASE;
-		ar71xx_mdio_resources[0].end = AR71XX_GE1_BASE + 0x200 - 1;
+	case AR71XX_SOC_AR9330:
+	case AR71XX_SOC_AR9331:
+		mdio_dev = &ar71xx_mdio1_device;
+		mdio_data = &ar71xx_mdio1_data;
 		break;
+
+	case AR71XX_SOC_AR9341:
+	case AR71XX_SOC_AR9342:
+	case AR71XX_SOC_AR9344:
+		if (id == 0) {
+			mdio_dev = &ar71xx_mdio0_device;
+			mdio_data = &ar71xx_mdio0_data;
+		} else {
+			mdio_dev = &ar71xx_mdio1_device;
+			mdio_data = &ar71xx_mdio1_data;
+		}
+		break;
+
 	case AR71XX_SOC_AR7242:
 		ar71xx_set_pll(AR71XX_PLL_REG_SEC_CONFIG,
 			       AR7242_PLL_REG_ETH0_INT_CLOCK, 0x62000000,
 			       AR71XX_ETH0_PLL_SHIFT);
+		/* fall through */
+	default:
+		mdio_dev = &ar71xx_mdio0_device;
+		mdio_data = &ar71xx_mdio0_data;
 		break;
+	}
+
+	mdio_data->phy_mask = phy_mask;
+
+	switch (ar71xx_soc) {
+	case AR71XX_SOC_AR7240:
+	case AR71XX_SOC_AR7241:
 	case AR71XX_SOC_AR9330:
 	case AR71XX_SOC_AR9331:
-		ar71xx_mdio_data.is_ar7240 = 1;
-		ar71xx_mdio_resources[0].start = AR71XX_GE1_BASE;
-		ar71xx_mdio_resources[0].end = AR71XX_GE1_BASE + 0x200 - 1;
+		mdio_data->is_ar7240 = 1;
 		break;
+
+	case AR71XX_SOC_AR9341:
+	case AR71XX_SOC_AR9342:
+	case AR71XX_SOC_AR9344:
+		if (id == 1)
+			mdio_data->is_ar7240 = 1;
+		break;
+
 	default:
 		break;
 	}
 
-	ar71xx_mdio_data.phy_mask = phy_mask;
-
-	platform_device_register(&ar71xx_mdio_device);
+	platform_device_register(mdio_dev);
 }
 
 struct ar71xx_eth_pll_data ar71xx_eth0_pll_data;
@@ -236,33 +345,35 @@ static u32 ar71xx_get_eth_pll(unsigned int mac, int speed)
 	return pll_val;
 }
 
-static void ar71xx_set_pll_ge0(int speed)
+static void ar71xx_set_speed_ge0(int speed)
 {
 	u32 val = ar71xx_get_eth_pll(0, speed);
 
 	ar71xx_set_pll(AR71XX_PLL_REG_SEC_CONFIG, AR71XX_PLL_REG_ETH0_INT_CLOCK,
 			val, AR71XX_ETH0_PLL_SHIFT);
+	ar71xx_mii_ctrl_set_speed(MII_REG_MII0_CTRL, speed);
 }
 
-static void ar71xx_set_pll_ge1(int speed)
+static void ar71xx_set_speed_ge1(int speed)
 {
 	u32 val = ar71xx_get_eth_pll(1, speed);
 
 	ar71xx_set_pll(AR71XX_PLL_REG_SEC_CONFIG, AR71XX_PLL_REG_ETH1_INT_CLOCK,
 			 val, AR71XX_ETH1_PLL_SHIFT);
+	ar71xx_mii_ctrl_set_speed(MII_REG_MII1_CTRL, speed);
 }
 
-static void ar724x_set_pll_ge0(int speed)
+static void ar724x_set_speed_ge0(int speed)
 {
 	/* TODO */
 }
 
-static void ar724x_set_pll_ge1(int speed)
+static void ar724x_set_speed_ge1(int speed)
 {
 	/* TODO */
 }
 
-static void ar7242_set_pll_ge0(int speed)
+static void ar7242_set_speed_ge0(int speed)
 {
 	u32 val = ar71xx_get_eth_pll(0, speed);
 	void __iomem *base;
@@ -272,28 +383,40 @@ static void ar7242_set_pll_ge0(int speed)
 	iounmap(base);
 }
 
-static void ar91xx_set_pll_ge0(int speed)
+static void ar91xx_set_speed_ge0(int speed)
 {
 	u32 val = ar71xx_get_eth_pll(0, speed);
 
 	ar71xx_set_pll(AR91XX_PLL_REG_ETH_CONFIG, AR91XX_PLL_REG_ETH0_INT_CLOCK,
 			 val, AR91XX_ETH0_PLL_SHIFT);
+	ar71xx_mii_ctrl_set_speed(MII_REG_MII0_CTRL, speed);
 }
 
-static void ar91xx_set_pll_ge1(int speed)
+static void ar91xx_set_speed_ge1(int speed)
 {
 	u32 val = ar71xx_get_eth_pll(1, speed);
 
 	ar71xx_set_pll(AR91XX_PLL_REG_ETH_CONFIG, AR91XX_PLL_REG_ETH1_INT_CLOCK,
 			 val, AR91XX_ETH1_PLL_SHIFT);
+	ar71xx_mii_ctrl_set_speed(MII_REG_MII1_CTRL, speed);
 }
 
-static void ar933x_set_pll_ge0(int speed)
+static void ar933x_set_speed_ge0(int speed)
 {
 	/* TODO */
 }
 
-static void ar933x_set_pll_ge1(int speed)
+static void ar933x_set_speed_ge1(int speed)
+{
+	/* TODO */
+}
+
+static void ar934x_set_speed_ge0(int speed)
+{
+	/* TODO */
+}
+
+static void ar934x_set_speed_ge1(int speed)
 {
 	/* TODO */
 }
@@ -338,17 +461,22 @@ static void ar933x_ddr_flush_ge1(void)
 	ar71xx_ddr_flush(AR933X_DDR_REG_FLUSH_GE1);
 }
 
+static void ar934x_ddr_flush_ge0(void)
+{
+	ar71xx_ddr_flush(AR934X_DDR_REG_FLUSH_GE0);
+}
+
+static void ar934x_ddr_flush_ge1(void)
+{
+	ar71xx_ddr_flush(AR934X_DDR_REG_FLUSH_GE1);
+}
+
 static struct resource ar71xx_eth0_resources[] = {
 	{
 		.name	= "mac_base",
 		.flags	= IORESOURCE_MEM,
 		.start	= AR71XX_GE0_BASE,
 		.end	= AR71XX_GE0_BASE + 0x200 - 1,
-	}, {
-		.name	= "mii_ctrl",
-		.flags	= IORESOURCE_MEM,
-		.start	= AR71XX_MII_BASE + MII_REG_MII0_CTRL,
-		.end	= AR71XX_MII_BASE + MII_REG_MII0_CTRL + 3,
 	}, {
 		.name	= "mac_irq",
 		.flags	= IORESOURCE_IRQ,
@@ -377,11 +505,6 @@ static struct resource ar71xx_eth1_resources[] = {
 		.flags	= IORESOURCE_MEM,
 		.start	= AR71XX_GE1_BASE,
 		.end	= AR71XX_GE1_BASE + 0x200 - 1,
-	}, {
-		.name	= "mii_ctrl",
-		.flags	= IORESOURCE_MEM,
-		.start	= AR71XX_MII_BASE + MII_REG_MII1_CTRL,
-		.end	= AR71XX_MII_BASE + MII_REG_MII1_CTRL + 3,
 	}, {
 		.name	= "mac_irq",
 		.flags	= IORESOURCE_IRQ,
@@ -423,6 +546,10 @@ struct platform_device ar71xx_eth1_device = {
 #define AR933X_PLL_VAL_1000	0x00110000
 #define AR933X_PLL_VAL_100	0x00001099
 #define AR933X_PLL_VAL_10	0x00991099
+
+#define AR934X_PLL_VAL_1000	0x00110000
+#define AR934X_PLL_VAL_100	0x00001099
+#define AR934X_PLL_VAL_10	0x00991099
 
 static void __init ar71xx_init_eth_pll_data(unsigned int id)
 {
@@ -476,6 +603,14 @@ static void __init ar71xx_init_eth_pll_data(unsigned int id)
 		pll_1000 = AR933X_PLL_VAL_1000;
 		break;
 
+	case AR71XX_SOC_AR9341:
+	case AR71XX_SOC_AR9342:
+	case AR71XX_SOC_AR9344:
+		pll_10 = AR934X_PLL_VAL_10;
+		pll_100 = AR934X_PLL_VAL_100;
+		pll_1000 = AR934X_PLL_VAL_1000;
+		break;
+
 	default:
 		BUG();
 	}
@@ -490,84 +625,180 @@ static void __init ar71xx_init_eth_pll_data(unsigned int id)
 		pll_data->pll_1000 = pll_1000;
 }
 
+static int __init ar71xx_setup_phy_if_mode(unsigned int id,
+					   struct ag71xx_platform_data *pdata)
+{
+	unsigned int mii_if;
+
+	switch (id) {
+	case 0:
+		switch (ar71xx_soc) {
+		case AR71XX_SOC_AR7130:
+		case AR71XX_SOC_AR7141:
+		case AR71XX_SOC_AR7161:
+		case AR71XX_SOC_AR9130:
+		case AR71XX_SOC_AR9132:
+			switch (pdata->phy_if_mode) {
+			case PHY_INTERFACE_MODE_MII:
+				mii_if = MII0_CTRL_IF_MII;
+				break;
+			case PHY_INTERFACE_MODE_GMII:
+				mii_if = MII0_CTRL_IF_GMII;
+				break;
+			case PHY_INTERFACE_MODE_RGMII:
+				mii_if = MII0_CTRL_IF_RGMII;
+				break;
+			case PHY_INTERFACE_MODE_RMII:
+				mii_if = MII0_CTRL_IF_RMII;
+				break;
+			default:
+				return -EINVAL;
+			}
+			ar71xx_mii_ctrl_set_if(MII_REG_MII0_CTRL, mii_if);
+			break;
+
+		case AR71XX_SOC_AR7240:
+		case AR71XX_SOC_AR7241:
+		case AR71XX_SOC_AR9330:
+		case AR71XX_SOC_AR9331:
+			pdata->phy_if_mode = PHY_INTERFACE_MODE_MII;
+			break;
+
+		case AR71XX_SOC_AR7242:
+			/* FIXME */
+
+		case AR71XX_SOC_AR9341:
+		case AR71XX_SOC_AR9342:
+		case AR71XX_SOC_AR9344:
+			switch (pdata->phy_if_mode) {
+			case PHY_INTERFACE_MODE_MII:
+			case PHY_INTERFACE_MODE_GMII:
+			case PHY_INTERFACE_MODE_RGMII:
+			case PHY_INTERFACE_MODE_RMII:
+				break;
+			default:
+				return -EINVAL;
+			}
+			break;
+
+		default:
+			BUG();
+		}
+		break;
+	case 1:
+		switch (ar71xx_soc) {
+		case AR71XX_SOC_AR7130:
+		case AR71XX_SOC_AR7141:
+		case AR71XX_SOC_AR7161:
+		case AR71XX_SOC_AR9130:
+		case AR71XX_SOC_AR9132:
+			switch (pdata->phy_if_mode) {
+			case PHY_INTERFACE_MODE_RMII:
+				mii_if = MII1_CTRL_IF_RMII;
+				break;
+			case PHY_INTERFACE_MODE_RGMII:
+				mii_if = MII1_CTRL_IF_RGMII;
+				break;
+			default:
+				return -EINVAL;
+			}
+			ar71xx_mii_ctrl_set_if(MII_REG_MII1_CTRL, mii_if);
+			break;
+
+		case AR71XX_SOC_AR7240:
+		case AR71XX_SOC_AR7241:
+		case AR71XX_SOC_AR9330:
+		case AR71XX_SOC_AR9331:
+			pdata->phy_if_mode = PHY_INTERFACE_MODE_GMII;
+			break;
+
+		case AR71XX_SOC_AR7242:
+			/* FIXME */
+
+		case AR71XX_SOC_AR9341:
+		case AR71XX_SOC_AR9342:
+		case AR71XX_SOC_AR9344:
+			switch (pdata->phy_if_mode) {
+			case PHY_INTERFACE_MODE_MII:
+			case PHY_INTERFACE_MODE_GMII:
+				break;
+			default:
+				return -EINVAL;
+			}
+			break;
+
+		default:
+			BUG();
+		}
+		break;
+	}
+
+	return 0;
+}
+
 static int ar71xx_eth_instance __initdata;
 void __init ar71xx_add_device_eth(unsigned int id)
 {
 	struct platform_device *pdev;
 	struct ag71xx_platform_data *pdata;
+	int err;
 
-	ar71xx_init_eth_pll_data(id);
-
-	switch (id) {
-	case 0:
-		switch (ar71xx_eth0_data.phy_if_mode) {
-		case PHY_INTERFACE_MODE_MII:
-			ar71xx_eth0_data.mii_if = MII0_CTRL_IF_MII;
-			break;
-		case PHY_INTERFACE_MODE_GMII:
-			ar71xx_eth0_data.mii_if = MII0_CTRL_IF_GMII;
-			break;
-		case PHY_INTERFACE_MODE_RGMII:
-			ar71xx_eth0_data.mii_if = MII0_CTRL_IF_RGMII;
-			break;
-		case PHY_INTERFACE_MODE_RMII:
-			ar71xx_eth0_data.mii_if = MII0_CTRL_IF_RMII;
-			break;
-		default:
-			printk(KERN_ERR "ar71xx: invalid PHY interface mode "
-					"for eth0\n");
-			return;
-		}
-		pdev = &ar71xx_eth0_device;
-		break;
-	case 1:
-		switch (ar71xx_eth1_data.phy_if_mode) {
-		case PHY_INTERFACE_MODE_RMII:
-			ar71xx_eth1_data.mii_if = MII1_CTRL_IF_RMII;
-			break;
-		case PHY_INTERFACE_MODE_RGMII:
-			ar71xx_eth1_data.mii_if = MII1_CTRL_IF_RGMII;
-			break;
-		default:
-			printk(KERN_ERR "ar71xx: invalid PHY interface mode "
-					"for eth1\n");
-			return;
-		}
-		pdev = &ar71xx_eth1_device;
-		break;
-	default:
+	if (id > 1) {
 		printk(KERN_ERR "ar71xx: invalid ethernet id %d\n", id);
 		return;
 	}
 
+	ar71xx_init_eth_pll_data(id);
+
+	if (id == 0)
+		pdev = &ar71xx_eth0_device;
+	else
+		pdev = &ar71xx_eth1_device;
+
 	pdata = pdev->dev.platform_data;
+
+	err = ar71xx_setup_phy_if_mode(id, pdata);
+	if (err) {
+		printk(KERN_ERR
+		       "ar71xx: invalid PHY interface mode for GE%u\n", id);
+		return;
+	}
 
 	switch (ar71xx_soc) {
 	case AR71XX_SOC_AR7130:
-		pdata->ddr_flush = id ? ar71xx_ddr_flush_ge1
-				      : ar71xx_ddr_flush_ge0;
-		pdata->set_pll =  id ? ar71xx_set_pll_ge1
-				     : ar71xx_set_pll_ge0;
+		if (id == 0) {
+			pdata->ddr_flush = ar71xx_ddr_flush_ge0;
+			pdata->set_speed = ar71xx_set_speed_ge0;
+		} else {
+			pdata->ddr_flush = ar71xx_ddr_flush_ge1;
+			pdata->set_speed = ar71xx_set_speed_ge1;
+		}
 		break;
 
 	case AR71XX_SOC_AR7141:
 	case AR71XX_SOC_AR7161:
-		pdata->ddr_flush = id ? ar71xx_ddr_flush_ge1
-				      : ar71xx_ddr_flush_ge0;
-		pdata->set_pll =  id ? ar71xx_set_pll_ge1
-				     : ar71xx_set_pll_ge0;
+		if (id == 0) {
+			pdata->ddr_flush = ar71xx_ddr_flush_ge0;
+			pdata->set_speed = ar71xx_set_speed_ge0;
+		} else {
+			pdata->ddr_flush = ar71xx_ddr_flush_ge1;
+			pdata->set_speed = ar71xx_set_speed_ge1;
+		}
 		pdata->has_gbit = 1;
 		break;
 
 	case AR71XX_SOC_AR7242:
-		ar71xx_eth0_data.reset_bit |= AR724X_RESET_GE0_MDIO |
-					      RESET_MODULE_GE0_PHY;
-		ar71xx_eth1_data.reset_bit |= AR724X_RESET_GE1_MDIO |
-					      RESET_MODULE_GE1_PHY;
-		pdata->ddr_flush = id ? ar724x_ddr_flush_ge1
-				      : ar724x_ddr_flush_ge0;
-		pdata->set_pll =  id ? ar724x_set_pll_ge1
-				     : ar7242_set_pll_ge0;
+		if (id == 0) {
+			pdata->reset_bit |= AR724X_RESET_GE0_MDIO |
+					    RESET_MODULE_GE0_PHY;
+			pdata->ddr_flush = ar724x_ddr_flush_ge0;
+			pdata->set_speed = ar7242_set_speed_ge0;
+		} else {
+			pdata->reset_bit |= AR724X_RESET_GE1_MDIO |
+					    RESET_MODULE_GE1_PHY;
+			pdata->ddr_flush = ar724x_ddr_flush_ge1;
+			pdata->set_speed = ar724x_set_speed_ge1;
+		}
 		pdata->has_gbit = 1;
 		pdata->is_ar724x = 1;
 
@@ -580,16 +811,28 @@ void __init ar71xx_add_device_eth(unsigned int id)
 		break;
 
 	case AR71XX_SOC_AR7241:
-		ar71xx_eth0_data.reset_bit |= AR724X_RESET_GE0_MDIO;
-		ar71xx_eth1_data.reset_bit |= AR724X_RESET_GE1_MDIO;
+		if (id == 0)
+			pdata->reset_bit |= AR724X_RESET_GE0_MDIO;
+		else
+			pdata->reset_bit |= AR724X_RESET_GE1_MDIO;
 		/* fall through */
 	case AR71XX_SOC_AR7240:
-		ar71xx_eth0_data.reset_bit |= RESET_MODULE_GE0_PHY;
-		ar71xx_eth1_data.reset_bit |= RESET_MODULE_GE1_PHY;
-		pdata->ddr_flush = id ? ar724x_ddr_flush_ge1
-				      : ar724x_ddr_flush_ge0;
-		pdata->set_pll =  id ? ar724x_set_pll_ge1
-				     : ar724x_set_pll_ge0;
+		if (id == 0) {
+			pdata->reset_bit |= RESET_MODULE_GE0_PHY;
+			pdata->ddr_flush = ar724x_ddr_flush_ge0;
+			pdata->set_speed = ar724x_set_speed_ge0;
+
+			pdata->phy_mask = BIT(4);
+		} else {
+			pdata->reset_bit |= RESET_MODULE_GE1_PHY;
+			pdata->ddr_flush = ar724x_ddr_flush_ge1;
+			pdata->set_speed = ar724x_set_speed_ge1;
+
+			pdata->speed = SPEED_1000;
+			pdata->duplex = DUPLEX_FULL;
+			pdata->has_ar7240_switch = 1;
+		}
+		pdata->has_gbit = 1;
 		pdata->is_ar724x = 1;
 		if (ar71xx_soc == AR71XX_SOC_AR7240)
 			pdata->is_ar7240 = 1;
@@ -603,32 +846,72 @@ void __init ar71xx_add_device_eth(unsigned int id)
 		break;
 
 	case AR71XX_SOC_AR9130:
-		pdata->ddr_flush = id ? ar91xx_ddr_flush_ge1
-				      : ar91xx_ddr_flush_ge0;
-		pdata->set_pll =  id ? ar91xx_set_pll_ge1
-				     : ar91xx_set_pll_ge0;
+		if (id == 0) {
+			pdata->ddr_flush = ar91xx_ddr_flush_ge0;
+			pdata->set_speed = ar91xx_set_speed_ge0;
+		} else {
+			pdata->ddr_flush = ar91xx_ddr_flush_ge1;
+			pdata->set_speed = ar91xx_set_speed_ge1;
+		}
 		pdata->is_ar91xx = 1;
 		break;
 
 	case AR71XX_SOC_AR9132:
-		pdata->ddr_flush = id ? ar91xx_ddr_flush_ge1
-				      : ar91xx_ddr_flush_ge0;
-		pdata->set_pll =  id ? ar91xx_set_pll_ge1
-				      : ar91xx_set_pll_ge0;
+		if (id == 0) {
+			pdata->ddr_flush = ar91xx_ddr_flush_ge0;
+			pdata->set_speed = ar91xx_set_speed_ge0;
+		} else {
+			pdata->ddr_flush = ar91xx_ddr_flush_ge1;
+			pdata->set_speed = ar91xx_set_speed_ge1;
+		}
 		pdata->is_ar91xx = 1;
 		pdata->has_gbit = 1;
 		break;
 
 	case AR71XX_SOC_AR9330:
 	case AR71XX_SOC_AR9331:
-		ar71xx_eth0_data.reset_bit = AR933X_RESET_GE0_MAC |
-					     AR933X_RESET_GE0_MDIO;
-		ar71xx_eth1_data.reset_bit = AR933X_RESET_GE1_MAC |
-					     AR933X_RESET_GE1_MDIO;
-		pdata->ddr_flush = id ? ar933x_ddr_flush_ge1
-				      : ar933x_ddr_flush_ge0;
-		pdata->set_pll =  id ? ar933x_set_pll_ge1
-				     : ar933x_set_pll_ge0;
+		if (id == 0) {
+			pdata->reset_bit = AR933X_RESET_GE0_MAC |
+					   AR933X_RESET_GE0_MDIO;
+			pdata->ddr_flush = ar933x_ddr_flush_ge0;
+			pdata->set_speed = ar933x_set_speed_ge0;
+		} else {
+			pdata->reset_bit = AR933X_RESET_GE1_MAC |
+					   AR933X_RESET_GE1_MDIO;
+			pdata->ddr_flush = ar933x_ddr_flush_ge1;
+			pdata->set_speed = ar933x_set_speed_ge1;
+
+			pdata->speed = SPEED_1000;
+			pdata->duplex = DUPLEX_FULL;
+			pdata->has_ar7240_switch = 1;
+		}
+
+		pdata->has_gbit = 1;
+		pdata->is_ar724x = 1;
+
+		if (!pdata->fifo_cfg1)
+			pdata->fifo_cfg1 = 0x0010ffff;
+		if (!pdata->fifo_cfg2)
+			pdata->fifo_cfg2 = 0x015500aa;
+		if (!pdata->fifo_cfg3)
+			pdata->fifo_cfg3 = 0x01f00140;
+		break;
+
+	case AR71XX_SOC_AR9341:
+	case AR71XX_SOC_AR9342:
+	case AR71XX_SOC_AR9344:
+		if (id == 0) {
+			pdata->reset_bit = AR934X_RESET_GE0_MAC |
+					   AR934X_RESET_GE0_MDIO;
+			pdata->ddr_flush =ar934x_ddr_flush_ge0;
+			pdata->set_speed = ar934x_set_speed_ge0;
+		} else {
+			pdata->reset_bit = AR934X_RESET_GE1_MAC |
+					   AR934X_RESET_GE1_MDIO;
+			pdata->ddr_flush = ar934x_ddr_flush_ge1;
+			pdata->set_speed = ar934x_set_speed_ge1;
+		}
+
 		pdata->has_gbit = 1;
 		pdata->is_ar724x = 1;
 
@@ -664,8 +947,28 @@ void __init ar71xx_add_device_eth(unsigned int id)
 			ar71xx_eth_instance);
 	}
 
-	if (pdata->mii_bus_dev == NULL)
-		pdata->mii_bus_dev = &ar71xx_mdio_device.dev;
+	if (pdata->mii_bus_dev == NULL) {
+		switch (ar71xx_soc) {
+		case AR71XX_SOC_AR9341:
+		case AR71XX_SOC_AR9342:
+		case AR71XX_SOC_AR9344:
+			if (id == 0)
+				pdata->mii_bus_dev = &ar71xx_mdio0_device.dev;
+			else
+				pdata->mii_bus_dev = &ar71xx_mdio1_device.dev;
+			break;
+
+		case AR71XX_SOC_AR7241:
+		case AR71XX_SOC_AR9330:
+		case AR71XX_SOC_AR9331:
+			pdata->mii_bus_dev = &ar71xx_mdio1_device.dev;
+			break;
+
+		default:
+			pdata->mii_bus_dev = &ar71xx_mdio0_device.dev;
+			break;
+		}
+	}
 
 	/* Reset the device */
 	ar71xx_device_stop(pdata->reset_bit);

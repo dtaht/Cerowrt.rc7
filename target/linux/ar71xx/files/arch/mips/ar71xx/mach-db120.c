@@ -28,10 +28,12 @@
 #define DB120_GPIO_LED_STATUS	14
 #define DB120_GPIO_LED_WPS	15
 
-#define DB120_GPIO_BTN_SW1	16
+#define DB120_GPIO_BTN_WPS	16
 
-#define DB120_CALDATA_OFFSET	0x1000
-#define DB120_WMAC_MAC_OFFSET	0x1002
+#define DB120_MAC0_OFFSET	0
+#define DB120_MAC1_OFFSET	6
+#define DB120_WMAC_CALDATA_OFFSET 0x1000
+#define DB120_PCIE_CALDATA_OFFSET 0x5000
 
 #define DB120_KEYS_POLL_INTERVAL	20	/* msecs */
 #define DB120_KEYS_DEBOUNCE_INTERVAL	(3 * DB120_KEYS_POLL_INTERVAL)
@@ -97,11 +99,11 @@ static struct gpio_led db120_leds_gpio[] __initdata = {
 
 static struct gpio_keys_button db120_gpio_keys[] __initdata = {
 	{
-		.desc		= "sw1",
+		.desc		= "WPS button",
 		.type		= EV_KEY,
-		.code		= BTN_0,
+		.code		= KEY_WPS_BUTTON,
 		.debounce_interval = DB120_KEYS_DEBOUNCE_INTERVAL,
-		.gpio		= DB120_GPIO_BTN_SW1,
+		.gpio		= DB120_GPIO_BTN_WPS,
 		.active_low	= 1,
 	}
 };
@@ -109,6 +111,8 @@ static struct gpio_keys_button db120_gpio_keys[] __initdata = {
 static void __init db120_setup(void)
 {
 	u8 *art = (u8 *) KSEG1ADDR(0x1fff0000);
+
+	ar71xx_gpio_output_select(DB120_GPIO_LED_USB, AR934X_GPIO_OUT_GPIO);
 
 	ar71xx_add_device_usb();
 
@@ -121,10 +125,28 @@ static void __init db120_setup(void)
 					 ARRAY_SIZE(db120_gpio_keys),
 					 db120_gpio_keys);
 
-	ar9xxx_add_device_wmac(art + DB120_CALDATA_OFFSET,
-				art + DB120_WMAC_MAC_OFFSET);
+	ar71xx_add_device_mdio(0, 0x0);
+	ar71xx_add_device_mdio(1, 0x0);
 
-	db120_pci_init();
+	/* GMAC0 is connected to an AR8327 switch */
+	ar71xx_init_mac(ar71xx_eth0_data.mac_addr, art + DB120_MAC0_OFFSET, 0);
+	ar71xx_eth0_data.phy_if_mode = PHY_INTERFACE_MODE_RGMII;
+	ar71xx_eth0_data.speed = SPEED_1000;
+	ar71xx_eth0_data.duplex = DUPLEX_FULL;
+
+	ar71xx_add_device_eth(0);
+
+	/* GMAC1 is connected to the internal switch */
+	ar71xx_init_mac(ar71xx_eth1_data.mac_addr, art + DB120_MAC1_OFFSET, 0);
+	ar71xx_eth1_data.phy_if_mode = PHY_INTERFACE_MODE_GMII;
+	ar71xx_eth1_data.speed = SPEED_100;
+	ar71xx_eth1_data.duplex = DUPLEX_FULL;
+
+	ar71xx_add_device_eth(1);
+
+	ar9xxx_add_device_wmac(art + DB120_WMAC_CALDATA_OFFSET, NULL);
+
+	db120_pci_init(art + DB120_PCIE_CALDATA_OFFSET, NULL);
 }
 
 MIPS_MACHINE(AR71XX_MACH_DB120, "DB120", "Atheros DB120", db120_setup);

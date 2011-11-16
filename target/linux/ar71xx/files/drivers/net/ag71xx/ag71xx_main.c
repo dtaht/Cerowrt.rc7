@@ -444,9 +444,6 @@ static void ag71xx_hw_setup(struct ag71xx *ag)
 	/* setup max frame length */
 	ag71xx_wr(ag, AG71XX_REG_MAC_MFL, AG71XX_TX_MTU_LEN);
 
-	/* setup MII interface type */
-	ag71xx_mii_ctrl_set_if(ag, pdata->mii_if);
-
 	/* setup FIFO configuration registers */
 	ag71xx_wr(ag, AG71XX_REG_FIFO_CFG0, FIFO_CFG0_INIT);
 	if (pdata->is_ar724x) {
@@ -536,7 +533,6 @@ void ag71xx_link_adjust(struct ag71xx *ag)
 	u32 cfg2;
 	u32 ifctl;
 	u32 fifo5;
-	u32 mii_speed;
 
 	if (!ag->link) {
 		ag71xx_hw_stop(ag);
@@ -561,17 +557,14 @@ void ag71xx_link_adjust(struct ag71xx *ag)
 
 	switch (ag->speed) {
 	case SPEED_1000:
-		mii_speed =  MII_CTRL_SPEED_1000;
 		cfg2 |= MAC_CFG2_IF_1000;
 		fifo5 |= FIFO_CFG5_BM;
 		break;
 	case SPEED_100:
-		mii_speed = MII_CTRL_SPEED_100;
 		cfg2 |= MAC_CFG2_IF_10_100;
 		ifctl |= MAC_IFCTL_SPEED;
 		break;
 	case SPEED_10:
-		mii_speed = MII_CTRL_SPEED_10;
 		cfg2 |= MAC_CFG2_IF_10_100;
 		break;
 	default:
@@ -586,10 +579,8 @@ void ag71xx_link_adjust(struct ag71xx *ag)
 	else
 		ag71xx_wr(ag, AG71XX_REG_FIFO_CFG3, 0x008001ff);
 
-	if (pdata->set_pll)
-		pdata->set_pll(ag->speed);
-
-	ag71xx_mii_ctrl_set_speed(ag, mii_speed);
+	if (pdata->set_speed)
+		pdata->set_speed(ag->speed);
 
 	ag71xx_wr(ag, AG71XX_REG_MAC_CFG2, cfg2);
 	ag71xx_wr(ag, AG71XX_REG_FIFO_CFG5, fifo5);
@@ -1123,27 +1114,13 @@ static int __devinit ag71xx_probe(struct platform_device *pdev)
 		goto err_free_dev;
 	}
 
-	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "mii_ctrl");
-	if (!res) {
-		dev_err(&pdev->dev, "no mii_ctrl resource found\n");
-		err = -ENXIO;
-		goto err_unmap_base;
-	}
-
-	ag->mii_ctrl = ioremap_nocache(res->start, res->end - res->start + 1);
-	if (!ag->mii_ctrl) {
-		dev_err(&pdev->dev, "unable to ioremap mii_ctrl\n");
-		err = -ENOMEM;
-		goto err_unmap_base;
-	}
-
 	dev->irq = platform_get_irq(pdev, 0);
 	err = request_irq(dev->irq, ag71xx_interrupt,
 			  IRQF_DISABLED,
 			  dev->name, dev);
 	if (err) {
 		dev_err(&pdev->dev, "unable to request IRQ %d\n", dev->irq);
-		goto err_unmap_mii_ctrl;
+		goto err_unmap_base;
 	}
 
 	dev->base_addr = (unsigned long)ag->mac_base;
@@ -1209,8 +1186,6 @@ err_free_desc:
 			  ag->stop_desc_dma);
 err_free_irq:
 	free_irq(dev->irq, dev);
-err_unmap_mii_ctrl:
-	iounmap(ag->mii_ctrl);
 err_unmap_base:
 	iounmap(ag->mac_base);
 err_free_dev:
@@ -1231,7 +1206,6 @@ static int __devexit ag71xx_remove(struct platform_device *pdev)
 		ag71xx_phy_disconnect(ag);
 		unregister_netdev(dev);
 		free_irq(dev->irq, dev);
-		iounmap(ag->mii_ctrl);
 		iounmap(ag->mac_base);
 		kfree(dev);
 		platform_set_drvdata(pdev, NULL);

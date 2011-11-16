@@ -23,7 +23,6 @@ struct ag71xx_platform_data {
 	int		speed;
 	int		duplex;
 	u32		reset_bit;
-	u32		mii_if;
 	u8		mac_addr[ETH_ALEN];
 	struct device	*mii_bus_dev;
 
@@ -35,7 +34,7 @@ struct ag71xx_platform_data {
 	u8		has_ar7240_switch:1;
 
 	void		(*ddr_flush)(void);
-	void		(*set_pll)(int speed);
+	void		(*set_speed)(int speed);
 
 	u32		fifo_cfg1;
 	u32		fifo_cfg2;

@@ -10,6 +10,7 @@
 
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/partitions.h>
+#include <linux/platform_device.h>
 
 #include <asm/mach-ar71xx/ar71xx.h>
 
@@ -118,7 +119,7 @@ static void __init tl_wr941nd_setup(void)
 	u8 *mac = (u8 *) KSEG1ADDR(0x1f01fc00);
 	u8 *eeprom = (u8 *) KSEG1ADDR(0x1fff1000);
 
-	ar71xx_add_device_mdio(0x0);
+	ar71xx_add_device_mdio(0, 0x0);
 
 	ar71xx_init_mac(ar71xx_eth0_data.mac_addr, mac, 0);
 	ar71xx_eth0_data.phy_if_mode = PHY_INTERFACE_MODE_RMII;
@@ -126,7 +127,8 @@ static void __init tl_wr941nd_setup(void)
 	ar71xx_eth0_data.duplex = DUPLEX_FULL;
 
 	ar71xx_add_device_eth(0);
-	ar71xx_add_device_dsa(0, &tl_wr941nd_dsa_data);
+	ar71xx_add_device_dsa(&ar71xx_eth0_device.dev, &ar71xx_mdio0_device.dev,
+			      &tl_wr941nd_dsa_data);
 
 	ar71xx_add_device_m25p80(&tl_wr941nd_flash_data);
 

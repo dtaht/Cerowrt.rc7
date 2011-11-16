@@ -28,8 +28,8 @@ static void ar71xx_gpio_irq_dispatch(void)
 	void __iomem *base = ar71xx_gpio_base;
 	u32 pending;
 
-	pending = __raw_readl(base + GPIO_REG_INT_PENDING) &
-		  __raw_readl(base + GPIO_REG_INT_ENABLE);
+	pending = __raw_readl(base + AR71XX_GPIO_REG_INT_PENDING) &
+		  __raw_readl(base + AR71XX_GPIO_REG_INT_ENABLE);
 
 	if (pending)
 		do_IRQ(AR71XX_GPIO_IRQ_BASE + fls(pending) - 1);
@@ -43,11 +43,11 @@ static void ar71xx_gpio_irq_unmask(struct irq_data *d)
 	void __iomem *base = ar71xx_gpio_base;
 	u32 t;
 
-	t = __raw_readl(base + GPIO_REG_INT_ENABLE);
-	__raw_writel(t | (1 << irq), base + GPIO_REG_INT_ENABLE);
+	t = __raw_readl(base + AR71XX_GPIO_REG_INT_ENABLE);
+	__raw_writel(t | (1 << irq), base + AR71XX_GPIO_REG_INT_ENABLE);
 
 	/* flush write */
-	(void) __raw_readl(base + GPIO_REG_INT_ENABLE);
+	(void) __raw_readl(base + AR71XX_GPIO_REG_INT_ENABLE);
 }
 
 static void ar71xx_gpio_irq_mask(struct irq_data *d)
@@ -56,11 +56,11 @@ static void ar71xx_gpio_irq_mask(struct irq_data *d)
 	void __iomem *base = ar71xx_gpio_base;
 	u32 t;
 
-	t = __raw_readl(base + GPIO_REG_INT_ENABLE);
-	__raw_writel(t & ~(1 << irq), base + GPIO_REG_INT_ENABLE);
+	t = __raw_readl(base + AR71XX_GPIO_REG_INT_ENABLE);
+	__raw_writel(t & ~(1 << irq), base + AR71XX_GPIO_REG_INT_ENABLE);
 
 	/* flush write */
-	(void) __raw_readl(base + GPIO_REG_INT_ENABLE);
+	(void) __raw_readl(base + AR71XX_GPIO_REG_INT_ENABLE);
 }
 
 static struct irq_chip ar71xx_gpio_irq_chip = {
@@ -82,14 +82,14 @@ static void __init ar71xx_gpio_irq_init(void)
 	void __iomem *base = ar71xx_gpio_base;
 	int i;
 
-	__raw_writel(0, base + GPIO_REG_INT_ENABLE);
-	__raw_writel(0, base + GPIO_REG_INT_PENDING);
+	__raw_writel(0, base + AR71XX_GPIO_REG_INT_ENABLE);
+	__raw_writel(0, base + AR71XX_GPIO_REG_INT_PENDING);
 
 	/* setup type of all GPIO interrupts to level sensitive */
-	__raw_writel(GPIO_INT_ALL, base + GPIO_REG_INT_TYPE);
+	__raw_writel(GPIO_INT_ALL, base + AR71XX_GPIO_REG_INT_TYPE);
 
 	/* setup polarity of all GPIO interrupts to active high */
-	__raw_writel(GPIO_INT_ALL, base + GPIO_REG_INT_POLARITY);
+	__raw_writel(GPIO_INT_ALL, base + AR71XX_GPIO_REG_INT_POLARITY);
 
 	for (i = AR71XX_GPIO_IRQ_BASE;
 	     i < AR71XX_GPIO_IRQ_BASE + AR71XX_GPIO_IRQ_COUNT; i++)
@@ -231,6 +231,40 @@ static void __init ar71xx_misc_irq_init(void)
 	setup_irq(AR71XX_CPU_IRQ_MISC, &ar71xx_misc_irqaction);
 }
 
+static void ar934x_ip2_irq_dispatch(unsigned int irq, struct irq_desc *desc)
+{
+	u32 status;
+
+	disable_irq_nosync(irq);
+
+	status = ar71xx_reset_rr(AR934X_RESET_REG_PCIE_WMAC_INT_STATUS);
+
+	if (status & AR934X_PCIE_WMAC_INT_PCIE_ALL) {
+		ar71xx_ddr_flush(AR934X_DDR_REG_FLUSH_PCIE);
+		generic_handle_irq(AR934X_IP2_IRQ_PCIE);
+	} else if (status & AR934X_PCIE_WMAC_INT_WMAC_ALL) {
+		ar71xx_ddr_flush(AR934X_DDR_REG_FLUSH_WMAC);
+		generic_handle_irq(AR934X_IP2_IRQ_WMAC);
+	} else {
+		spurious_interrupt();
+	}
+
+	enable_irq(irq);
+}
+
+static void ar934x_ip2_irq_init(void)
+{
+	int i;
+
+	for (i = AR934X_IP2_IRQ_BASE;
+	     i < AR934X_IP2_IRQ_BASE + AR934X_IP2_IRQ_COUNT; i++)
+		irq_set_chip_and_handler(i, &dummy_irq_chip,
+					 handle_level_irq);
+
+	irq_set_chained_handler(AR71XX_CPU_IRQ_IP2, ar934x_ip2_irq_dispatch);
+}
+
+
 /*
  * The IP2/IP3 lines are tied to a PCI/WMAC/USB device. Drivers for
  * these devices typically allocate coherent DMA memory, however the
@@ -264,7 +298,6 @@ static void ar933x_ip2_handler(void)
 
 static void ar934x_ip2_handler(void)
 {
-	ar71xx_ddr_flush(AR934X_DDR_REG_FLUSH_PCIE);
 	do_IRQ(AR71XX_CPU_IRQ_IP2);
 }
 
@@ -371,6 +404,11 @@ void __init arch_init_irq(void)
 	mips_cpu_irq_init();
 
 	ar71xx_misc_irq_init();
+
+	if (ar71xx_soc == AR71XX_SOC_AR9341 ||
+	    ar71xx_soc == AR71XX_SOC_AR9342 ||
+	    ar71xx_soc == AR71XX_SOC_AR9344)
+		ar934x_ip2_irq_init();
 
 	cp0_perfcount_irq = AR71XX_MISC_IRQ_PERFC;
 
